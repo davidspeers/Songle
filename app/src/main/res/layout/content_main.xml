@@ -13,10 +13,23 @@
         android:layout_width="139dp"
         android:layout_height="144dp"
         android:clickable="true"
+        android:focusable="true"
         android:src="@android:drawable/ic_menu_mapmode"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.502"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/startGameButton"
+        android:layout_width="127dp"
+        android:layout_height="90dp"
+        android:text="@string/start_game"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintHorizontal_bias="0.031"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.011" />
 </android.support.constraint.ConstraintLayout>
