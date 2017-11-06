@@ -56,19 +56,27 @@ class MainActivity : AppCompatActivity() {
             switchToMode()
         }
 
-        Log.v("Test", "Does logging work")
-
         val caller = DownloadCompleteListener()
 
         DownloadXmlTask(caller).execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
+
     }
 
 }
 
+val songsList = ArrayList<XMLSongParser.Song>()
+
 class DownloadCompleteListener {
     fun downloadComplete(result: String){
-        //create snackbar result
+        //create snackbar result, if result not empty print success
         Log.v("Outside", result)
+        //for (song in result) {
+        //    Log.v("Outside", song)
+        //}
+        for (song in songsList) {
+            Log.v("OutOfLoop", song.title)
+        }
+
     }
 
 }
@@ -89,8 +97,9 @@ class DownloadXmlTask(private val caller : DownloadCompleteListener) : AsyncTask
         val stream = downloadUrl(urlString)
         val parsedSongs = XMLSongParser().parse(stream)
         result.append(parsedSongs.toString())
-        Log.v("Song", result.toString())
-        Log.v("Song", parsedSongs.toString())
+        for (song in parsedSongs) {
+            songsList.add(song)
+        }
         return result.toString()
     }
 
@@ -110,7 +119,6 @@ class DownloadXmlTask(private val caller : DownloadCompleteListener) : AsyncTask
 
     override fun onPostExecute(result: String) {
         super.onPostExecute(result)
-        for (song in result) Log.v("Song", song.toString())
         caller.downloadComplete(result)
     }
 }

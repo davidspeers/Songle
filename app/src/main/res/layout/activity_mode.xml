@@ -6,4 +6,55 @@
     android:layout_height="match_parent"
     tools:context="com.example.david.songlek.ModeActivity">
 
+    <Button
+        android:id="@+id/easyButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="148dp"
+        android:layout_marginLeft="148dp"
+        android:layout_marginTop="36dp"
+        android:text="@string/easy"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/normalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="@string/normal"
+        app:layout_constraintStart_toStartOf="@+id/easyButton"
+        app:layout_constraintTop_toBottomOf="@+id/easyButton" />
+
+    <Button
+        android:id="@+id/hardButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="@string/hard"
+        app:layout_constraintStart_toStartOf="@+id/normalButton"
+        app:layout_constraintTop_toBottomOf="@+id/normalButton" />
+
+    <Button
+        android:id="@+id/veryHardButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="36dp"
+        android:text="@string/very_hard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/hardButton" />
+
+    <Button
+        android:id="@+id/extremeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginTop="36dp"
+        android:text="@string/extreme"
+        app:layout_constraintStart_toStartOf="@+id/veryHardButton"
+        app:layout_constraintTop_toBottomOf="@+id/veryHardButton" />
+
 </android.support.constraint.ConstraintLayout>
