@@ -3,6 +3,7 @@ package com.example.david.songlek
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -19,13 +20,18 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.common.ConnectionResult
+import org.jetbrains.anko.*
+import java.io.File
+import java.io.FileInputStream
+import java.net.URL
+import com.google.maps.android.data.kml.KmlLayer
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
     private lateinit var mGoogleApiClient: GoogleApiClient
     val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
     var mLocationPermissionGranted = false
-    private lateinit var mLastLocation : Location
+    private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,20 +73,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         }
     }
 
-    override fun onConnected(connectionHint : Bundle?) {
-        try { createLocationRequest(); }
-        catch (ise : IllegalStateException) {
+    override fun onConnected(connectionHint: Bundle?) {
+        try {
+            createLocationRequest(); } catch (ise: IllegalStateException) {
             println("IllegalStateException thrown [onConnected]");
         }
         // Can we access the user’s current location?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
         }
     }
 
-    override fun onLocationChanged(current : Location?) {
+    override fun onLocationChanged(current: Location?) {
         if (current == null) {
             println("[onLocationChanged] Location unknown")
         } else {
@@ -93,11 +99,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // ...
     }
 
-    override fun onConnectionSuspended(flag : Int) {
+    override fun onConnectionSuspended(flag: Int) {
         println(" >>>> onConnectionSuspended")
     }
 
-    override fun onConnectionFailed(result : ConnectionResult) {
+    override fun onConnectionFailed(result: ConnectionResult) {
         // An unresolvable error has occurred and a connection to Google APIs
         // could not be established. Display an error message, or handle
         // the failure silently
@@ -126,11 +132,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         try {
             // Visualise current position with a small blue circle
             mMap.isMyLocationEnabled = true
-        } catch (se : SecurityException) {
+        } catch (se: SecurityException) {
             println("Security exception thrown [onMapReady]")
         }
 
         // Add "My location" button to the user interface
         mMap.uiSettings.isMyLocationButtonEnabled = true
+
+
+        doAsync {
+            val difficulty = "01"
+            val mapNum = "1"
+            val url = URL("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$difficulty/map$mapNum.kml")
+
+            val kmlInputStream = url.openStream()
+            val layer = KmlLayer(mMap, kmlInputStream, applicationContext)
+            uiThread {
+                layer.addLayerToMap()
+            }
+        }
     }
+
 }
+
