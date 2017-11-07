@@ -76,13 +76,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     override fun onConnected(connectionHint: Bundle?) {
         try {
             createLocationRequest(); } catch (ise: IllegalStateException) {
-            println("IllegalStateException thrown [onConnected]");
+            println("IllegalStateException thrown [onConnected]")
         }
         // Can we access the user’s current location?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
         }
     }
 
@@ -141,9 +141,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
 
         doAsync {
-            val difficulty = "01"
-            val mapNum = "1"
-            val url = URL("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$difficulty/map$mapNum.kml")
+            val difficulty = "1"
+            val songNum = "01"
+            val url = URL("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNum/map$difficulty.kml")
 
             val kmlInputStream = url.openStream()
             val layer = KmlLayer(mMap, kmlInputStream, applicationContext)

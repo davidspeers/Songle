@@ -8,28 +8,74 @@
     tools:context="com.example.david.songlek.MainActivity"
     tools:showIn="@layout/activity_main">
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/floatingActionButton"
-        android:layout_width="139dp"
-        android:layout_height="144dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@android:drawable/ic_menu_mapmode"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
+    <ImageButton
+        android:id="@+id/playSongleButton"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="149dp"
+        android:background="@drawable/playsonglebutton3"
+        android:contentDescription="@string/todo"
+        app:layout_constraintBottom_toTopOf="@+id/profileButton"
+        app:layout_constraintEnd_toStartOf="@+id/unlockedSongsButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:id="@+id/startGameButton"
-        android:layout_width="127dp"
-        android:layout_height="90dp"
-        android:text="@string/start_game"
-        app:layout_constraintBottom_toTopOf="parent"
-        app:layout_constraintEnd_toStartOf="parent"
-        app:layout_constraintHorizontal_bias="0.031"
+    <ImageButton
+        android:id="@+id/unlockedSongsButton"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="150dp"
+        android:background="@drawable/unlockedsongsbutton3"
+        android:contentDescription="@string/todo"
+        app:layout_constraintBottom_toTopOf="@+id/informationButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/playSongleButton"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/profileButton"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginRight="12dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginLeft="16dp"
+        android:background="@drawable/profilebutton4"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/informationButton"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/playSongleButton" android:contentDescription="@string/todo" />
+
+    <ImageButton
+        android:id="@+id/informationButton"
+        android:layout_width="170dp"
+        android:layout_height="170dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginRight="16dp"
+        android:background="@drawable/informationbutton3"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/profileButton"
+        app:layout_constraintTop_toBottomOf="@+id/unlockedSongsButton" android:contentDescription="@string/todo" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="352dp"
+        android:layout_height="150dp"
+        app:layout_constraintBottom_toTopOf="@+id/unlockedSongsButton"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.011" />
+        app:srcCompat="@drawable/slogo" android:contentDescription="@string/todo" />
+
 </android.support.constraint.ConstraintLayout>

@@ -16,8 +16,7 @@ class ModeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mode)
 
-        easyButton.setOnClickListener() {
-
+        playGameButton.setOnClickListener() {
             switchToMap()
         }
     }

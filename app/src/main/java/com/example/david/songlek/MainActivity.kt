@@ -10,6 +10,9 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.util.Xml
+import android.view.Menu
+import android.view.MenuItem
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -30,10 +33,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    private fun switchToMap() {
-        val intent = Intent(this, MapsActivity::class.java)
-        startActivity(intent)
-    }
 
     private fun switchToMode() {
         val intent = Intent(this, ModeActivity::class.java)
@@ -48,11 +47,7 @@ class MainActivity : AppCompatActivity() {
         var filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         this.registerReceiver(receiver, filter)
 
-        floatingActionButton.setOnClickListener() {
-            switchToMap()
-        }
-
-        startGameButton.setOnClickListener() {
+        playSongleButton.setOnClickListener() {
             switchToMode()
         }
 
@@ -61,6 +56,26 @@ class MainActivity : AppCompatActivity() {
         DownloadXmlTask(caller).execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
 
     }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+// Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.getItemId()) {
+            R.id.action_setting ->
+// User chose the ”Settings” item, show the app settings UI
+                {startActivity(Intent(this, ModeActivity::class.java))
+                return true}
+            else ->
+// If we got here, the user’s action was not recognised.
+// Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item)
+        }
+    }
+
 
 }
 
