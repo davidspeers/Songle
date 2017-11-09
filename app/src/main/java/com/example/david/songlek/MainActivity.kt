@@ -39,6 +39,21 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private fun switchToProfile() {
+        val intent = Intent(this, ProfileActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun switchToInformation() {
+        val intent = Intent(this, InformationActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun switchToUnlockedSongs() {
+        val intent = Intent(this, UnlockedSongsActivity::class.java)
+        startActivity(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -49,6 +64,18 @@ class MainActivity : AppCompatActivity() {
 
         playSongleButton.setOnClickListener() {
             switchToMode()
+        }
+
+        profileButton.setOnClickListener() {
+            switchToProfile()
+        }
+
+        informationButton.setOnClickListener() {
+            switchToInformation()
+        }
+
+        unlockedSongsButton.setOnClickListener() {
+            switchToUnlockedSongs()
         }
 
         val caller = DownloadCompleteListener()
@@ -67,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         when (item.getItemId()) {
             R.id.action_setting ->
 // User chose the ”Settings” item, show the app settings UI
-                {startActivity(Intent(this, ModeActivity::class.java))
+                {startActivity(Intent(this, SettingsActivity::class.java))
                 return true}
             else ->
 // If we got here, the user’s action was not recognised.

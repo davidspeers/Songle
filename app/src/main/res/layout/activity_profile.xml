@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.david.songlek.ProfileActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/currentPointText"
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:gravity="center"
+                android:text="@string/current_lyric_points"
+                android:textSize="40sp"
+                tools:layout_editor_absoluteX="-3dp" />
+
+            <EditText
+                android:id="@+id/currentNumber"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:ems="10"
+                android:gravity="center"
+                android:inputType="number"
+                android:text="@string/_16"
+                android:textSize="100sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                tools:layout_editor_absoluteY="86dp" />
+
+            <TextView
+                android:id="@+id/TotalPointText"
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:gravity="center"
+                android:text="@string/total_lyric_points"
+                android:textSize="40sp"
+                tools:layout_editor_absoluteX="0dp"
+                tools:layout_editor_absoluteY="226dp" />
+
+            <EditText
+                android:id="@+id/TotalNumber"
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:ems="10"
+                android:gravity="center"
+                android:inputType="number"
+                android:text="@string/_104"
+                android:textSize="100sp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                tools:layout_editor_absoluteY="312dp" />
+
+            <TextView
+                android:id="@+id/achievementsText"
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:gravity="center"
+                android:text="@string/achievements"
+                android:textSize="40sp" />
+
+            <TextView
+                android:id="@+id/unlockedView"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/unlocked"
+                android:textSize="30sp" />
+
+            <TextView
+                android:id="@+id/got100LPView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/got_100_total_lyric_points"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/played1HourView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/played_songle_for_1_hour"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/WalkedFor5Km"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/walked_for_5_kilometers"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/lockedView"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/locked"
+                android:textSize="30sp" />
+
+            <TextView
+                android:id="@+id/get500LPView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/get_500_total_lyric_points"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/play5HourView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/play_songle_for_5_hours"
+                android:textSize="20sp" />
+
+            <TextView
+                android:id="@+id/walkFor5Km"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/walk_for_10_kilometers"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </ScrollView>
+
+</android.support.constraint.ConstraintLayout>

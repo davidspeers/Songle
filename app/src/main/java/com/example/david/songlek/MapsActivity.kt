@@ -25,6 +25,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URL
 import com.google.maps.android.data.kml.KmlLayer
+import kotlinx.android.synthetic.main.activity_maps.*
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
@@ -37,6 +38,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
+
+        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
+
+        floatingActionButton.setOnClickListener() {
+            alert("Are You Sure You Want To Delete All Your Progress?") {
+                yesButton { toast("Yess!!!") }
+                noButton { }
+            }.show()
+        }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment

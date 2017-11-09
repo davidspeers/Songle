@@ -22,6 +22,7 @@
 
     <string name="modeParagraph">In Normal Mode 100% of the lyrics are available. They are classified as either boring (yellow marker), not boring (yellow marker with black dot), or interesting (orange marker with black dot).</string>
     <string name="action_setting">Settings</string>
+    <string name="action_main">Back</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
@@ -95,6 +96,40 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
-
+    <string name="change_theme">Change Theme:</string>
+    <string name="purple">Purple</string>
+    <string name="green">Green</string>
+    <string name="blue">Blue</string>
+    <string name="red_default">Red (Default)</string>
+    <string name="reset_progress">Reset Progress</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="walk_for_10_kilometers">Walk For 10 Kilometers</string>
+    <string name="play_songle_for_5_hours">Play Songle For 5 Hours</string>
+    <string name="get_500_total_lyric_points">Get 500 Total Lyric Points</string>
+    <string name="locked">Locked:</string>
+    <string name="walked_for_5_kilometers">Walked For 5 Kilometers</string>
+    <string name="played_songle_for_1_hour">Played Songle For 1 Hour</string>
+    <string name="got_100_total_lyric_points">Got 100 Total Lyric Points</string>
+    <string name="unlocked">Unlocked:</string>
+    <string name="achievements">Achievements:</string>
+    <string name="_104">104</string>
+    <string name="total_lyric_points">Total Lyric Points:</string>
+    <string name="_16">16</string>
+    <string name="current_lyric_points">Current Lyric Points:</string>
+    <string name="about_songle">About Songle</string>
+    <string name="contact_the_developer">Contact the Developer</string>
+    <string name="for_further_questions_feel_free_to_contact_the_developer_at_nsonglesupport_outlook_com">For further questions feel free to contact the developer at: songlesupport@outlook.com</string>
+    <string name="songle_is_a_game_were_you_collect_lyrics_from_a_song_on_a_google_map_by_visiting_the_location_on_a_marker_you_can_then_guess_what_song_the_lyrics_correspond_to">Songle is a game were you collect lyrics from a song on a google map by visiting the location on a marker. You can then guess what song the lyrics correspond to.</string>
+    <string name="how_do_i_play_songle">How do I play Songle?</string>
+    <string name="faq">FAQ</string>
+    <string name="to_play_songle_start_by_toucking_the_play_game_button_from_here">To play songle, start by touching the play game button. From here choose the game mode you want to play (the default and recommended beginner difficulty is normal) and touch the play game button again. Now walk around the map collecting song lyrics (these are collected automatically when you are within 10 meters of a marker), you will require a network connection to track your location. Once you want to guess the song, simply click the "guess song" button and type in the name of the song. If you are correct, congratulation, you have won. If you are incorrect you can guess again or continue collecting lyrics and guess again later. You can also get help by buying lyrics and hints such as the name of the songs' artist by spending LyricPoints. </string>
+    <string name="what_are_lp">What are LyricPoints?</string>
+    <string name="lp_are">LyricPoints are Songles in-game currency and progression tracker. For every lyric you collect you gain 1 LyricPoint (in hard and very hard mode you get 2 points per lyric collected, and in extreme mode you get 3 points per lyric collected). You can exchange LyricPoints for lyrics and hints when playing a game. You can keep track of how many LyricPoints you have left by going to your profile page, and you can also see how many total LyricPoints you have earned so that you can brag to your friends! </string>
+    <string name="the_clash_i_fought_the_line">The Clash - "I Fought the Line"</string>
+    <string name="lou_reed_perfect_day">Lou Reed - "Perfect Day"</string>
+    <string name="queen_bohemian_rhapsody">Queen - "Bohemian Rhapsody"</string>
+    <string name="unlocked_3_18_songs">Unlocked 3/18 Songs:</string>
+    <string name="tap_song_to_watch_on_youtube">(Tap Song To Watch on YouTube)</string>
 
 </resources>

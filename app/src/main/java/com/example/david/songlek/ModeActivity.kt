@@ -19,6 +19,9 @@ class ModeActivity : AppCompatActivity() {
         playGameButton.setOnClickListener() {
             switchToMap()
         }
+
+        getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
+
     }
 
 
