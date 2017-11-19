@@ -20,10 +20,15 @@
     <string name="extreme_mode">Extreme Mode</string>
     <string name="textview">TextView</string>
 
-    <string name="modeParagraph">In Normal Mode 100% of the lyrics are available. They are classified as either boring (yellow marker), not boring (yellow marker with black dot), or interesting (orange marker with black dot).</string>
+    <string name="modeParagraph">In Very Hard Mode 50% of the lyrics are available. They are classified as either boring (yellow marker), or not boring (yellow marker with black dot).</string>
     <string name="action_setting">Settings</string>
     <string name="action_main">Back</string>
     <string name="title_activity_settings">Settings</string>
+
+    <string name="action_submit">Submit</string>
+    <string name="action_hints">Hints</string>
+    <string name="action_lyrics">Lyrics</string>
+    <string name="action_newgame">New Game</string>
 
     <!-- Strings related to Settings -->
 
@@ -97,8 +102,8 @@
 
     <string name="pref_title_vibrate">Vibrate</string>
     <string name="change_theme">Change Theme:</string>
-    <string name="purple">Purple</string>
-    <string name="green">Green</string>
+    <string name="purple">Purple (Available Once You Unlock All Achievements)</string>
+    <string name="green">Green (Available Once Your High Score Exceeds 1000)</string>
     <string name="blue">Blue</string>
     <string name="red_default">Red (Default)</string>
     <string name="reset_progress">Reset Progress</string>
@@ -114,7 +119,7 @@
     <string name="unlocked">Unlocked:</string>
     <string name="achievements">Achievements:</string>
     <string name="_104">104</string>
-    <string name="total_lyric_points">Total Lyric Points:</string>
+    <string name="total_lyric_points">High Score:</string>
     <string name="_16">16</string>
     <string name="current_lyric_points">Current Lyric Points:</string>
     <string name="about_songle">About Songle</string>
@@ -125,11 +130,18 @@
     <string name="faq">FAQ</string>
     <string name="to_play_songle_start_by_toucking_the_play_game_button_from_here">To play songle, start by touching the play game button. From here choose the game mode you want to play (the default and recommended beginner difficulty is normal) and touch the play game button again. Now walk around the map collecting song lyrics (these are collected automatically when you are within 10 meters of a marker), you will require a network connection to track your location. Once you want to guess the song, simply click the "guess song" button and type in the name of the song. If you are correct, congratulation, you have won. If you are incorrect you can guess again or continue collecting lyrics and guess again later. You can also get help by buying lyrics and hints such as the name of the songs' artist by spending LyricPoints. </string>
     <string name="what_are_lp">What are LyricPoints?</string>
-    <string name="lp_are">LyricPoints are Songles in-game currency and progression tracker. For every lyric you collect you gain 1 LyricPoint (in hard and very hard mode you get 2 points per lyric collected, and in extreme mode you get 3 points per lyric collected). You can exchange LyricPoints for lyrics and hints when playing a game. You can keep track of how many LyricPoints you have left by going to your profile page, and you can also see how many total LyricPoints you have earned so that you can brag to your friends! </string>
+    <string name="lp_are">LyricPoints are Songles in-game currency. For every lyric you collect you gain 1 LyricPoint (in hard and very hard mode you get 2 points per lyric collected, and in extreme mode you get 3 points per lyric collected). You can exchange LyricPoints for lyrics and hints when playing a game. You can keep track of how many LyricPoints you have left by going to your profile page.</string>
     <string name="the_clash_i_fought_the_line">The Clash - "I Fought the Line"</string>
     <string name="lou_reed_perfect_day">Lou Reed - "Perfect Day"</string>
     <string name="queen_bohemian_rhapsody">Queen - "Bohemian Rhapsody"</string>
     <string name="unlocked_3_18_songs">Unlocked 3/18 Songs:</string>
     <string name="tap_song_to_watch_on_youtube">(Tap Song To Watch on YouTube)</string>
+
+    <string name="congratulations">Congratulations\nYou Guessed Correctly!!</string>
+    <string name="lp_gained">You Gained A Total Of 24 Lyrics Points This Game.</string>
+    <string name="score">Score: 248</string>
+    <string name="highscore">High Score: 600</string>
+    <string name="play_again">Play Again</string>
+    <string name="go_to_main_menu">Go to Main Menu</string>
 
 </resources>

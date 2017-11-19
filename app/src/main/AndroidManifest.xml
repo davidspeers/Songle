@@ -43,7 +43,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
         <activity
             android:name=".ModeActivity"
             android:label="Select Game Mode"
@@ -53,7 +52,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".MainActivity" />
         </activity>
-
         <activity
             android:name=".SplashScreenActivity"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
@@ -93,6 +91,16 @@
         <activity
             android:name=".UnlockedSongsActivity"
             android:label="Unlocked Songs"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".MainActivity" />
+        </activity>
+
+        <activity
+            android:name=".WinActivity"
+            android:label="You Guessed Correctly!!"
             android:parentActivityName=".MainActivity"
             android:theme="@style/AppTheme">
             <meta-data

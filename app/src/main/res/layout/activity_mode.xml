@@ -4,79 +4,101 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.david.songlek.ModeActivity">
+    tools:context="com.example.david.songlek.ModeActivity"
+    tools:layout_editor_absoluteY="81dp">
 
-    <RadioButton
-        android:id="@+id/easyRadioButton"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/easy_mode"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" android:layout_marginStart="16dp"/>
+    <RadioGroup
+        android:id="@+id/radioMode"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="1dp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginRight="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/playGameButton"
+        app:layout_constraintEnd_toStartOf="@+id/modeDescription"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <RadioButton
-        android:id="@+id/normalRadioButton"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/normal_mode"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/easyRadioButton" android:layout_marginStart="16dp" />
+        <RadioButton
+            android:id="@+id/easyRadioButton"
+            android:layout_width="150dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/easy_mode"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <RadioButton
-        android:id="@+id/hardRadioButton"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/hard_mode"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/normalRadioButton" android:layout_marginStart="16dp"/>
+        <RadioButton
+            android:id="@+id/normalRadioButton"
+            android:layout_width="150dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/normal_mode"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/easyRadioButton" />
 
-    <RadioButton
-        android:id="@+id/vHardRadioButton"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/very_hard_mode"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/hardRadioButton" android:layout_marginStart="16dp" />
+        <RadioButton
+            android:id="@+id/hardRadioButton"
+            android:layout_width="150dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/hard_mode"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/normalRadioButton" />
 
-    <RadioButton
-        android:id="@+id/extremeRadioButton"
-        android:layout_width="150dp"
-        android:layout_height="60dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="20dp"
-        android:text="@string/extreme_mode"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/vHardRadioButton" android:layout_marginStart="16dp"/>
+        <RadioButton
+            android:id="@+id/vHardRadioButton"
+            android:layout_width="150dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/very_hard_mode"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hardRadioButton" />
+
+        <RadioButton
+            android:id="@+id/extremeRadioButton"
+            android:layout_width="150dp"
+            android:layout_height="60dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/extreme_mode"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/vHardRadioButton" />
+    </RadioGroup>
 
     <TextView
         android:id="@+id/modeDescription"
-        android:layout_width="197dp"
+        android:layout_width="0dp"
         android:layout_height="311dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginTop="40dp"
-        android:textSize="20sp"
+        android:layout_marginEnd="1dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="28dp"
         android:text="@string/modeParagraph"
-        app:layout_constraintStart_toEndOf="@+id/hardRadioButton"
+        android:textSize="20sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/radioMode"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/playGameButton"
-        android:layout_width="360dp"
-        android:layout_height="110dp"
-        android:layout_marginLeft="16dp"
-        android:background="@drawable/playsonglemodebutton3"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:background="@drawable/startsonglebutton2"
         android:contentDescription="@string/todo"
-        android:layout_marginStart="16dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioMode" />
 
 </android.support.constraint.ConstraintLayout>

@@ -24,6 +24,13 @@
                 android:textSize="40sp"
                 tools:layout_editor_absoluteX="-3dp" />
 
+            <android.support.design.widget.FloatingActionButton
+                android:id="@+id/floatingActionButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="true"
+                app:srcCompat="@android:drawable/ic_input_add" android:focusable="true"/>
+
             <EditText
                 android:id="@+id/currentNumber"
                 android:layout_width="match_parent"
@@ -38,7 +45,7 @@
                 tools:layout_editor_absoluteY="86dp" />
 
             <TextView
-                android:id="@+id/TotalPointText"
+                android:id="@+id/HighScore"
                 android:layout_width="match_parent"
                 android:layout_height="86dp"
                 android:gravity="center"

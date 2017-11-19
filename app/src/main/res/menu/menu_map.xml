@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_newgame"
+        android:icon="@drawable/ic_fiber_new_black_24dp"
+        android:title="@string/action_newgame"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/action_hints"
+        android:icon="@drawable/hinticon"
+        android:title="@string/action_hints"
+        app:showAsAction="ifRoom"/>
+
+    <item android:id="@+id/action_lyrics"
+        android:icon="@drawable/lyricsicon"
+        android:title="@string/action_lyrics"
+        app:showAsAction="ifRoom"/>
+
+
+    <item android:id="@+id/action_submit"
+        android:icon="@android:drawable/ic_menu_send"
+        android:title="@string/action_setting"
+        app:showAsAction="ifRoom"/>
+</menu>

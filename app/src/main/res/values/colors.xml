@@ -6,5 +6,9 @@
 
     <color name="orange">#F92B2B</color>
     <color name="darkOrange">#911818</color>
+
+    <!--<color name="orange">#00B6F9</color>
+    <color name="darkOrange">#015574</color>-->
+
     <color name="black">#000000</color>
 </resources>

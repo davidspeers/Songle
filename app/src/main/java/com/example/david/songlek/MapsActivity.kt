@@ -1,13 +1,25 @@
 package com.example.david.songlek
 
 import android.Manifest
+import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
+import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.InputType
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -26,6 +38,7 @@ import java.io.FileInputStream
 import java.net.URL
 import com.google.maps.android.data.kml.KmlLayer
 import kotlinx.android.synthetic.main.activity_maps.*
+import org.jetbrains.anko.design.coordinatorLayout
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
@@ -41,13 +54,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
 
-        floatingActionButton.setOnClickListener() {
-            alert("Are You Sure You Want To Delete All Your Progress?") {
-                yesButton { toast("Yess!!!") }
-                noButton { }
-            }.show()
-        }
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         // Get notified when the map is ready to be used. Long-running activities are performed asynchronously in order to keep the user interface responsive
@@ -56,6 +62,66 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Create an instance of GoogleAPIClient.
         mGoogleApiClient = GoogleApiClient.Builder(this).addConnectionCallbacks(this).addOnConnectionFailedListener(this).addApi(LocationServices.API).build()
     }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+// Inflate the menu; this adds items to the action bar if it is present.
+        menuInflater.inflate(R.menu.menu_map, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
+        if (id == R.id.action_submit)
+        {
+                val builder = AlertDialog.Builder(this)
+                val input = EditText(this)
+                input.setInputType(InputType.TYPE_CLASS_TEXT)
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+                builder.setView(input)
+                builder.setMessage("Guess The Song Title")
+                        .setPositiveButton("Okay", DialogInterface.OnClickListener { dialog, id ->
+                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)}).setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, id ->
+                    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)})
+                builder.show()
+            return true
+        }
+        if (id == R.id.action_hints)
+        { alert("Current Lyric Points: 16\n\nGet A Boring Word (5 Lyric Points)\n\nGet A Not Boring Word (10 Lyric Points)\n\nGet An Interesting Word (20 Lyric Points)\n\nGet A Very Interesting Word (50 Lyric Points)\n\nGet Artists' Name (100 Lyric Points)") {
+            title("Purchase Hints For Lyric Points")
+        }.show()
+            return true }
+        if (id == R.id.action_lyrics)
+        { alert("You have unlocked the\n Walk 5 Kilometers Achievement\nHere are 10 Lyric Points") {
+            title("Congratulations!")
+            }.show()
+            return true
+            /*alert("You gained a total of 24 Lyric Points this Game\n\nScore: 248\n\nHigh Score: 600") {
+                title("Congratulations. You Guessed Correctly!!")
+                yesButton { toast("Go To Home Screen")}
+            }.show()
+            return true*/
+            /*alert() {
+                title("Sorry That Is Incorrect.")
+                positiveButton("Keep Playing") {}
+                negativeButton("Give Up") {}
+            }.show()
+            return true*/
+            /*Snackbar.make(coordinatorLayout(), "The Artists Name Is: Queen", Snackbar.LENGTH_INDEFINITE).setAction("Okay", View.OnClickListener() {}).show()*/
+            /*startActivity(Intent(this, WinActivity::class.java))
+                return true*/
+
+        }
+        if (id == R.id.action_newgame)
+        { alert("Are you sure you want to start a new game? All progress will be lost!") {
+            yesButton { toast("Yes") }
+            noButton { toast("No") }
+            }.show()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
 
     override fun onStart() {
         super.onStart()
@@ -151,7 +217,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
 
         doAsync {
-            val difficulty = "1"
+            val difficulty = "4"
             val songNum = "01"
             val url = URL("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNum/map$difficulty.kml")
 
