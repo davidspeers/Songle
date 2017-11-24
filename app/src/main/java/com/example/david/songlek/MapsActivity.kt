@@ -15,6 +15,8 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.InputType
+import android.util.Log
+import android.util.Xml
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -37,8 +39,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.net.URL
 import com.google.maps.android.data.kml.KmlLayer
+import com.google.maps.android.data.kml.KmlPlacemark
 import kotlinx.android.synthetic.main.activity_maps.*
 import org.jetbrains.anko.design.coordinatorLayout
+import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserException
+import java.io.IOException
+import java.io.InputStream
+import java.net.HttpURLConnection
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
@@ -48,7 +56,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
 
+    private var colourId = 0
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        colourId = settings.getInt("storedColourId", 0)
+        when (colourId) {
+            0 -> setTheme(R.style.RedTheme);
+            1 -> setTheme(R.style.BlueTheme);
+            2 -> setTheme(R.style.GreenTheme);
+            3 -> setTheme(R.style.PurpleTheme);
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
 
@@ -215,19 +234,235 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Add "My location" button to the user interface
         mMap.uiSettings.isMyLocationButtonEnabled = true
 
+        //val caller = DownloadCompleteKmlListener()
+
+        //DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/map4.kml")
+
 
         doAsync {
-            val difficulty = "4"
-            val songNum = "01"
-            val url = URL("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNum/map$difficulty.kml")
-
-            val kmlInputStream = url.openStream()
-            val layer = KmlLayer(mMap, kmlInputStream, applicationContext)
+            DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/map4.kml")
             uiThread {
-                layer.addLayerToMap()
+                for (marker in markersList) {
+                    val coords = marker.point.split(',')
+                    mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name))
+                }
             }
         }
+    }
+}
+
+val markersList = ArrayList<KmlMarkerParser.Marker>()
+
+/*class DownloadCompleteKmlListener {
+    fun downloadComplete(result: String){
+        //create snackbar result, if result not empty print success
+        Log.v("Outside", result)
+        //for (song in result) {
+        //    Log.v("Outside", song)
+        //}
+        for (marker in markersList) {
+            val coords = marker.point.split(',')
+            mMap.addMarker(MarkerOptions().position(LatLng(coords[0].toDouble(), coords[1].toDouble())).title(marker.name))
+        }
+    }
+}*/
+
+class DownloadKmlTask() {
+
+    fun execute(vararg urls: String): String {
+        return try {
+            loadKMLFromNetwork(urls[0])
+        } catch (e: IOException) {
+            "Unable to load content. Check your network connection"
+        } catch (e: XmlPullParserException) {
+            "Error parsing XML"
+        }
+    }
+
+    private fun loadKMLFromNetwork(urlString: String): String  {
+        val result = StringBuilder()
+        val stream = downloadUrl(urlString)
+        val parsedMarkers = KmlMarkerParser().parse(stream)
+        result.append(parsedMarkers.toString())
+        for (marker in parsedMarkers) {
+            markersList.add(marker)
+        }
+        return result.toString()
+    }
+
+    @Throws(IOException::class)
+    private fun downloadUrl(urlString: String): InputStream {
+        val url = URL(urlString)
+        val conn = url.openConnection() as HttpURLConnection
+        // Also available: HttpsURLConnection
+        conn.readTimeout = 10000 // milliseconds
+        conn.connectTimeout = 15000 // milliseconds
+        conn.requestMethod = "GET"
+        conn.doInput = true
+        // Starts the query
+        conn.connect()
+        return conn.inputStream
     }
 
 }
 
+class KmlMarkerParser() {
+
+    data class Marker(val name: String, val description: String, val styleUrl: String, val point: String)
+
+    // We don’t use namespaces
+    private val ns: String? = null
+
+    @Throws(XmlPullParserException::class, IOException::class)
+    fun parse(input: InputStream): List<Marker> {
+        input.use {
+            val parser = Xml.newPullParser()
+            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,
+                    false)
+            parser.setInput(input, null)
+            parser.nextTag()
+            return readFeed(parser)
+        }
+    }
+
+    @Throws(XmlPullParserException::class, IOException::class)
+    private fun readFeed(parser: XmlPullParser): List<Marker> {
+        val markers = ArrayList<Marker>()
+        parser.require(XmlPullParser.START_TAG, ns, "kml")
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+            // Starts by looking for the entry tag
+            if (parser.name == "Document") {
+                markers.add(readDocument(parser))
+            } else if (parser.name == "Placemark") {
+                markers.add(readPlacemark(parser))
+            } else {
+                skip(parser)
+            }
+        }
+        return markers
+    }
+
+    @Throws(XmlPullParserException::class, IOException::class)
+    private fun readDocument(parser: XmlPullParser): Marker {
+        parser.require(XmlPullParser.START_TAG, ns, "Document")
+        var name = ""
+        var description = ""
+        var styleUrl = ""
+        var Point = ""
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG)
+                continue
+            if (parser.name == "Placemark")
+                continue
+            when (parser.name) {
+                "name" -> name = readName(parser)
+                "description" -> description = readDescription(parser)
+                "styleUrl" -> styleUrl = readStyleUrl(parser)
+                "Point" -> Point = readPoint(parser)
+                else -> skip(parser)
+            }
+        }
+        return Marker(name, description, styleUrl, Point)
+    }
+
+    @Throws(XmlPullParserException::class, IOException::class)
+    private fun readPlacemark(parser: XmlPullParser): Marker {
+        parser.require(XmlPullParser.START_TAG, ns, "Placemark")
+        var name = ""
+        var description = ""
+        var styleUrl = ""
+        var Point = ""
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG)
+                continue
+            if (parser.name == "Placemark")
+                continue
+            when (parser.name) {
+                "name" -> name = readName(parser)
+                "description" -> description = readDescription(parser)
+                "styleUrl" -> styleUrl = readStyleUrl(parser)
+                "Point" -> Point = readPoint(parser)
+                else -> skip(parser)
+            }
+        }
+        return Marker(name, description, styleUrl, Point)
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class)
+    private fun readName(parser: XmlPullParser): String {
+        parser.require(XmlPullParser.START_TAG, ns, "name")
+        val name = readText(parser)
+        parser.require(XmlPullParser.END_TAG, ns, "name")
+        return name
+    }
+
+
+    @Throws(IOException::class, XmlPullParserException::class)
+    private fun readDescription(parser: XmlPullParser): String {
+        parser.require(XmlPullParser.START_TAG, ns, "description")
+        val description = readText(parser)
+        parser.require(XmlPullParser.END_TAG, ns, "description")
+        return description
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class)
+    private fun readPoint(parser: XmlPullParser): String {
+        parser.require(XmlPullParser.START_TAG, ns, "Point")
+        var coordinates = ""
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.eventType != XmlPullParser.START_TAG) {
+                continue
+            }
+            val tagName = parser.name
+            if (tagName == "coordinates") {
+                coordinates = readCoordinates(parser)
+            } else {
+                skip(parser)
+            }
+        }
+        return coordinates
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class)
+    private fun readCoordinates(parser: XmlPullParser): String {
+        parser.require(XmlPullParser.START_TAG, ns, "coordinates")
+        val coordinates = readText(parser)
+        parser.require(XmlPullParser.END_TAG, ns, "coordinates")
+        return coordinates
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class)
+    private fun readStyleUrl(parser: XmlPullParser): String {
+        parser.require(XmlPullParser.START_TAG, ns, "styleUrl")
+        val styleUrl = readText(parser)
+        parser.require(XmlPullParser.END_TAG, ns, "styleUrl")
+        return styleUrl
+    }
+
+    @Throws(IOException::class, XmlPullParserException::class)
+    private fun readText(parser: XmlPullParser): String {
+        var result = ""
+        if (parser.next() == XmlPullParser.TEXT) {
+            result = parser.text
+            parser.nextTag()
+        }
+        return result
+    }
+
+    @Throws(XmlPullParserException::class, IOException::class)
+    private fun skip(parser: XmlPullParser) {
+        if (parser.eventType != XmlPullParser.START_TAG) {
+            throw IllegalStateException()
+        }
+        var depth = 1
+        while (depth != 0) {
+            when (parser.next()) {
+                XmlPullParser.END_TAG -> depth--
+                XmlPullParser.START_TAG -> depth++
+            }
+        }
+    }
+}

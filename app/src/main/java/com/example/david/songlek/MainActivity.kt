@@ -12,7 +12,6 @@ import android.util.Log
 import android.util.Xml
 import android.view.Menu
 import android.view.MenuItem
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
@@ -54,7 +53,54 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    private var colourId = 0 // id of radio button selected
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+
+    override fun onResume() {
+        super.onResume()
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        colourId = settings.getInt("storedColourId", 0)
+        when (colourId) {
+            0 -> {
+                playSongleButton.setBackgroundResource(R.drawable.redplay)
+                unlockedSongsButton.setBackgroundResource(R.drawable.redunlock)
+                profileButton.setBackgroundResource(R.drawable.redprofile)
+                informationButton.setBackgroundResource(R.drawable.redinfo)
+                setTheme(R.style.RedTheme)
+            }
+            1 -> {
+                playSongleButton.setBackgroundResource(R.drawable.blueplay)
+                unlockedSongsButton.setBackgroundResource(R.drawable.blueunlock)
+                profileButton.setBackgroundResource(R.drawable.blueprofile)
+                informationButton.setBackgroundResource(R.drawable.blueinfo)
+                setTheme(R.style.BlueTheme)
+            }
+            2 -> {
+                playSongleButton.setBackgroundResource(R.drawable.greenplay)
+                unlockedSongsButton.setBackgroundResource(R.drawable.greenunlock)
+                profileButton.setBackgroundResource(R.drawable.greenprofile)
+                informationButton.setBackgroundResource(R.drawable.greeninfo)
+                setTheme(R.style.GreenTheme)
+            }
+            3 -> {
+                playSongleButton.setBackgroundResource(R.drawable.purpleplay)
+                unlockedSongsButton.setBackgroundResource(R.drawable.purpleunlock)
+                profileButton.setBackgroundResource(R.drawable.purpleprofile)
+                informationButton.setBackgroundResource(R.drawable.purpleinfo)
+                setTheme(R.style.PurpleTheme)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        colourId = settings.getInt("storedColourId", 0)
+        when (colourId) {
+            0 -> setTheme(R.style.RedTheme);
+            1 -> setTheme(R.style.BlueTheme);
+            2 -> setTheme(R.style.GreenTheme);
+            3 -> setTheme(R.style.PurpleTheme);
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -124,6 +170,7 @@ class DownloadCompleteListener {
 }
 
 class DownloadXmlTask(private val caller : DownloadCompleteListener) : AsyncTask<String, Void, String>() {
+
     override fun doInBackground(vararg urls: String): String {
         return try {
             loadXmlFromNetwork(urls[0])

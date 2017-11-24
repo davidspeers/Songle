@@ -4,9 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.RadioButton
 import kotlinx.android.synthetic.main.activity_mode.*
-import kotlinx.android.synthetic.main.activity_settings.*
 
 class ModeActivity : AppCompatActivity() {
 
@@ -16,9 +14,18 @@ class ModeActivity : AppCompatActivity() {
     }
 
     private var buttonId = 1 // id of radio button selected
+    private var colourId = 0
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        colourId = settings.getInt("storedColourId", 0)
+        when (colourId) {
+            0 -> setTheme(R.style.RedTheme);
+            1 -> setTheme(R.style.BlueTheme);
+            2 -> setTheme(R.style.GreenTheme);
+            3 -> setTheme(R.style.PurpleTheme);
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mode)
 
@@ -60,6 +67,7 @@ class ModeActivity : AppCompatActivity() {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // use 1 as the default value (this might be the first time the app is run)
         buttonId = settings.getInt("storedModeId", 1)
+        colourId = settings.getInt("storedColourId", 0)
 
         when (buttonId) {
             0 -> easyRadioButton.setChecked(true)
@@ -67,6 +75,13 @@ class ModeActivity : AppCompatActivity() {
             2 -> hardRadioButton.setChecked(true)
             3 -> vHardRadioButton.setChecked(true)
             4 -> extremeRadioButton.setChecked(true)
+        }
+
+        when (colourId) {
+            0 -> playGameButton.setBackgroundResource(R.drawable.redstart)
+            1 -> playGameButton.setBackgroundResource(R.drawable.bluestart)
+            2 -> playGameButton.setBackgroundResource(R.drawable.greenstart)
+            3 -> playGameButton.setBackgroundResource(R.drawable.purplestart)
         }
     }
 

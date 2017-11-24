@@ -12,25 +12,22 @@ import android.widget.EditText
 
 class ProfileActivity : AppCompatActivity() {
 
+    private var colourId = 0
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        colourId = settings.getInt("storedColourId", 0)
+        when (colourId) {
+            0 -> setTheme(R.style.RedTheme);
+            1 -> setTheme(R.style.BlueTheme);
+            2 -> setTheme(R.style.GreenTheme);
+            3 -> setTheme(R.style.PurpleTheme);
+        }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
 
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
 
-        val guessSong = findViewById<FloatingActionButton>(R.id.floatingActionButton)
-        guessSong.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            val input = EditText(this)
-            input.setInputType(InputType.TYPE_CLASS_TEXT)
-            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
-            builder.setView(input)
-            builder.setMessage("Guess the Song Title")
-                    .setPositiveButton("Guess", DialogInterface.OnClickListener { dialog, id ->
-                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)}).setNegativeButton("Blarg", DialogInterface.OnClickListener {dialog, id ->
-                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)})
-            builder.show()
-        }
     }
 }
