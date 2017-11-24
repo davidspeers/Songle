@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.david.songlek.UnlockedSongsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/unlockedSongs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/unlocked_3_18_songs"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/tapDescription"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="@string/tap_song_to_watch_on_youtube"
+            android:textSize="20sp" />
+
+        <TextView
+            android:id="@+id/song1"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="@string/the_clash_i_fought_the_line"
+            android:textSize="25sp" />
+
+        <TextView
+            android:id="@+id/song2"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="@string/lou_reed_perfect_day"
+            android:textSize="25sp" />
+
+        <TextView
+            android:id="@+id/song3"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:text="@string/queen_bohemian_rhapsody"
+            android:textSize="25sp"
+            tools:layout_editor_absoluteX="0dp"
+            tools:layout_editor_absoluteY="0dp" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>

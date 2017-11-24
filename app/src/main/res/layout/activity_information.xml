@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.david.songlek.InformationActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/aboutSongleView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/about_songle"
+                android:textSize="35sp"/>
+
+            <TextView
+                android:id="@+id/aboutView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/songle_is_a_game_were_you_collect_lyrics_from_a_song_on_a_google_map_by_visiting_the_location_on_a_marker_you_can_then_guess_what_song_the_lyrics_correspond_to" />
+
+            <TextView
+                android:id="@+id/FAQ"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/faq"
+                android:textSize="35sp" />
+
+            <TextView
+                android:id="@+id/HowDoIPlay"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/how_do_i_play_songle"
+                android:textSize="20sp"/>
+
+            <TextView
+                android:id="@+id/Answer1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/to_play_songle_start_by_toucking_the_play_game_button_from_here"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:id="@+id/WhatAreLP"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/what_are_lp"
+                android:textSize="20sp"/>
+
+            <TextView
+                android:id="@+id/Answer2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/lp_are"
+                android:textSize="15sp"/>
+
+            <TextView
+                android:id="@+id/contactDevView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/contact_the_developer"
+                android:textSize="35sp" />
+
+            <TextView
+                android:id="@+id/contactView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:text="@string/for_further_questions_feel_free_to_contact_the_developer_at_nsonglesupport_outlook_com"
+                android:textSize="15sp"/>
+        </LinearLayout>
+    </ScrollView>
+</android.support.constraint.ConstraintLayout>
