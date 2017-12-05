@@ -34,6 +34,7 @@ import com.google.android.gms.location.LocationListener
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.maps.model.BitmapDescriptorFactory.fromResource
 import org.jetbrains.anko.*
 import java.io.File
 import java.io.FileInputStream
@@ -51,7 +52,7 @@ import java.net.HttpURLConnection
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
     private lateinit var mGoogleApiClient: GoogleApiClient
-    val PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1
+    val permissionsRequestAccessFineLocation = 1
     var mLocationPermissionGranted = false
     private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
@@ -170,14 +171,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     override fun onConnected(connectionHint: Bundle?) {
         try {
-            createLocationRequest(); } catch (ise: IllegalStateException) {
-            println("IllegalStateException thrown [onConnected]")
+            createLocationRequest();
+        }
+        catch (ise: IllegalStateException) {
+            println("[$TAG] [onConnected] IllegalStateException thrown")
         }
         // Can we access the user’s current location?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
         } else {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION)
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), permissionsRequestAccessFineLocation)
         }
     }
 
@@ -244,7 +247,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             uiThread {
                 for (marker in markersList) {
                     val coords = marker.point.split(',')
-                    mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name))
+                    when (marker.description) {
+                        "unclassified" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_wht_blank)))
+                        "boring" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_ylw_blank)))
+                        "notboring" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_ylw_circle)))
+                        "interesting" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_orange_diamond)))
+                        "veryinteresting" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_red_stars)))
+                    }
+
+
+
                 }
             }
         }
