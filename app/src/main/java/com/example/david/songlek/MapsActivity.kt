@@ -35,9 +35,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.maps.model.BitmapDescriptorFactory.fromResource
+import com.google.android.gms.maps.model.Marker
 import org.jetbrains.anko.*
-import java.io.File
-import java.io.FileInputStream
 import java.net.URL
 import com.google.maps.android.data.kml.KmlLayer
 import com.google.maps.android.data.kml.KmlPlacemark
@@ -45,9 +44,10 @@ import kotlinx.android.synthetic.main.activity_maps.*
 import org.jetbrains.anko.design.coordinatorLayout
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
-import java.io.IOException
-import java.io.InputStream
+import java.io.*
 import java.net.HttpURLConnection
+import java.util.*
+import kotlin.collections.ArrayList
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
@@ -56,6 +56,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     var mLocationPermissionGranted = false
     private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
+    val markerHash = HashMap<String, Marker>()
+    val collectedLyrics = ArrayList<String>()
 
     private var colourId = 0
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
@@ -192,9 +194,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             (${current.getLatitude()},
             ${current.getLongitude()})"""
             )
+            // Do something with current location
+            for (marker in markersList) {
+                val coords = marker.point.split(',')
+                val result = FloatArray(10)
+                Location.distanceBetween(current.latitude, current.longitude, coords[1].toDouble(), coords[0].toDouble(), result)
+                if (result[0] < 10) {
+                    val markerName = markerHash.get(marker.name)
+                    if (markerName == null) {
+                        //Do nothing
+                    } else {
+                        markerName.remove()
+                        val points = marker.name.split(":")
+                        val collectedLyric = lyrics.get(points[0].toInt()-1)[points[1].toInt()-1]
+                        collectedLyrics.add(collectedLyric)
+                        Log.v("lyrics", collectedLyric)
+                        markerHash.remove(marker.name)
+                    }
+                }
+            }
         }
-        // Do something with current location
-        // ...
     }
 
     override fun onConnectionSuspended(flag: Int) {
@@ -217,13 +236,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
      * it inside the SupportMapFragment. This method will only be triggered once the user has
      * installed Google Play services and returned to the app.
      */
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera
-        val sydney = LatLng(-34.0, 151.0)
-        mMap.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney))
+        val sydney = LatLng(55.945, -3.1885)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 16.toFloat()))
 
         // Also available: new LatLngZoom(sydney, 15)
 
@@ -237,26 +256,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Add "My location" button to the user interface
         mMap.uiSettings.isMyLocationButtonEnabled = true
 
-        //val caller = DownloadCompleteKmlListener()
-
-        //DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/map4.kml")
-
-
         doAsync {
+            DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/lyrics.txt")
             DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/map4.kml")
             uiThread {
+
                 for (marker in markersList) {
                     val coords = marker.point.split(',')
                     when (marker.description) {
-                        "unclassified" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_wht_blank)))
-                        "boring" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_ylw_blank)))
-                        "notboring" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_ylw_circle)))
-                        "interesting" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_orange_diamond)))
-                        "veryinteresting" -> mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_red_stars)))
+                        "unclassified" -> {
+                            val temp = mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_wht_blank_resized)))
+                            markerHash.put(marker.name, temp)
+                        }
+                        "boring" -> {
+                            val temp = mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_ylw_blank_resized)))
+                            markerHash.put(marker.name, temp)
+                        }
+                        "notboring" -> {
+                            val temp = mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_ylw_circle_resized)))
+                            markerHash.put(marker.name, temp)
+                        }
+                        "interesting" -> {
+                            val temp = mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_orange_diamond_resized)))
+                            markerHash.put(marker.name, temp)
+                        }
+                        "veryinteresting" -> {
+                            val temp = mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_red_stars_resized)))
+                            markerHash.put(marker.name, temp)
+                        }
                     }
-
-
-
                 }
             }
         }
@@ -265,19 +293,52 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
 val markersList = ArrayList<KmlMarkerParser.Marker>()
 
-/*class DownloadCompleteKmlListener {
-    fun downloadComplete(result: String){
-        //create snackbar result, if result not empty print success
-        Log.v("Outside", result)
-        //for (song in result) {
-        //    Log.v("Outside", song)
-        //}
-        for (marker in markersList) {
-            val coords = marker.point.split(',')
-            mMap.addMarker(MarkerOptions().position(LatLng(coords[0].toDouble(), coords[1].toDouble())).title(marker.name))
+val lyrics = ArrayList<List<String>>()
+
+class DownloadLyricsTask() {
+
+    fun execute(vararg urls: String) {
+        try {
+            loadLyricsFromNetwork(urls[0])
+        } catch (e: IOException) {
+            println("<<<< Unable to load content. Check your network connection")
         }
     }
-}*/
+
+    private fun loadLyricsFromNetwork(urlString: String)  {
+        val stream = downloadUrl(urlString)
+        val url = URL(urlString)
+        val reader = BufferedReader(InputStreamReader(url.openStream()))
+        var line = reader.readLine()
+        while (line!=null) {
+            /*for (lyric in line.split("\\s+")) {
+                lyricsLine.add(lyric)
+                Log.v("Working", lyricsLine.get(0))
+                Log.v("Working?", line)
+            }*/
+            val lyricsLine = line.replace(",", "").replace(".", "").replace("!", "").replace("?", "").replace("(", "").replace(")", "").split(" ")
+            //
+            lyrics.add(lyricsLine)
+            Log.v("working", lyricsLine[0])
+            line = reader.readLine()
+        }
+        reader.close();
+    }
+
+    @Throws(IOException::class)
+    private fun downloadUrl(urlString: String): InputStream {
+        val url = URL(urlString)
+        val conn = url.openConnection() as HttpURLConnection
+        // Also available: HttpsURLConnection
+        conn.readTimeout = 10000 // milliseconds
+        conn.connectTimeout = 15000 // milliseconds
+        conn.requestMethod = "GET"
+        conn.doInput = true
+        // Starts the query
+        conn.connect()
+        return conn.inputStream
+    }
+}
 
 class DownloadKmlTask() {
 
