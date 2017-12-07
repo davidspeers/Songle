@@ -92,4 +92,14 @@ class SettingsActivity : AppCompatActivity() {
         // Apply the edits!
         editor.apply()
     }
+
+    private fun switchToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+    }
+
+    //This is a workaround so that the setTheme function in MainActivity gets called
+    override fun onBackPressed() {
+        switchToMain()
+    }
 }
