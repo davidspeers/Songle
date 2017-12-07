@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import kotlinx.android.synthetic.main.activity_mode.*
 
 class ModeActivity : AppCompatActivity() {
@@ -15,6 +16,7 @@ class ModeActivity : AppCompatActivity() {
 
     private var buttonId = 1 // id of radio button selected
     private var colourId = 0
+    private var storedSongNumber = 1
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,23 +41,23 @@ class ModeActivity : AppCompatActivity() {
             when (optionId) {
                 R.id.easyRadioButton -> {
                     modeDescription.setText(R.string.easyModeParagraph)
-                    buttonId = 0
+                    buttonId = 5
                 }
                 R.id.normalRadioButton -> {
                     modeDescription.setText(R.string.normalModeParagraph)
-                    buttonId = 1
+                    buttonId = 4
                 }
                 R.id.hardRadioButton -> {
                     modeDescription.setText(R.string.hardModeParagraph)
-                    buttonId = 2
+                    buttonId = 3
                 }
                 R.id.vHardRadioButton -> {
                     modeDescription.setText(R.string.vHardModeParagraph)
-                    buttonId = 3
+                    buttonId = 2
                 }
                 R.id.extremeRadioButton -> {
                     modeDescription.setText(R.string.extremeModeParagraph)
-                    buttonId = 4
+                    buttonId = 1
                 }
             }
         })
@@ -70,11 +72,11 @@ class ModeActivity : AppCompatActivity() {
         colourId = settings.getInt("storedColourId", 0)
 
         when (buttonId) {
-            0 -> easyRadioButton.setChecked(true)
-            1 -> normalRadioButton.setChecked(true)
-            2 -> hardRadioButton.setChecked(true)
-            3 -> vHardRadioButton.setChecked(true)
-            4 -> extremeRadioButton.setChecked(true)
+            5 -> easyRadioButton.setChecked(true)
+            4 -> normalRadioButton.setChecked(true)
+            3 -> hardRadioButton.setChecked(true)
+            2 -> vHardRadioButton.setChecked(true)
+            1 -> extremeRadioButton.setChecked(true)
         }
 
         when (colourId) {
@@ -85,13 +87,14 @@ class ModeActivity : AppCompatActivity() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
         // All objects are from android.context.Context
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("storedModeId", buttonId)
+        editor.putInt("storedSongNumber", storedSongNumber)
         // Apply the edits!
         editor.apply()
     }

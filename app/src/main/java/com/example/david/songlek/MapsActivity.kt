@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Location
 import android.os.AsyncTask
 import android.os.Bundle
@@ -15,6 +16,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.InputType
+import android.text.TextUtils
 import android.util.Log
 import android.util.Xml
 import android.view.Menu
@@ -22,6 +24,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import com.example.david.songlek.R.menu.menu_map
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -57,10 +60,24 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
     val markerHash = HashMap<String, Marker>()
+    var collectedLyricsCount = 0
     val collectedLyrics = ArrayList<String>()
+    val song = "Bohemian Rhapsody"
 
     private var colourId = 0
+    private var songNumber = 1
+    private var difficulty = 1
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
+
+    private fun switchToMode() {
+        val intent = Intent(this, ModeActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun switchToWin() {
+        val intent = Intent(this, WinActivity::class.java)
+        startActivity(intent)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
@@ -95,29 +112,74 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         val id = item.itemId
         if (id == R.id.action_submit)
         {
-                val builder = AlertDialog.Builder(this)
-                val input = EditText(this)
-                input.setInputType(InputType.TYPE_CLASS_TEXT)
-                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
-                builder.setView(input)
-                builder.setMessage("Guess The Song Title")
-                        .setPositiveButton("Okay", DialogInterface.OnClickListener { dialog, id ->
-                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)}).setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, id ->
-                    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)})
-                builder.show()
+            mMap.clear()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Guess The Song Title")
+
+            val input = EditText(this)
+            input.setInputType(InputType.TYPE_CLASS_TEXT)
+            builder.setView(input)
+
+            val ims = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            ims.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+
+            builder.setPositiveButton("Okay", DialogInterface.OnClickListener() { dialog, id ->
+                ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+                Log.v("dialog", input.text.toString())
+                if (song.replace(" ", "").equals(input.text.toString().replace(" ", ""), ignoreCase = true)) {
+                    switchToWin()
+                }
+            })
+            builder.setNegativeButton("Cancel", DialogInterface.OnClickListener() { dialog, id ->
+                ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
+                dialog.cancel()
+                toast("Sorry that was Incorrect")
+            })
+
+            builder.show()
+
             return true
         }
         if (id == R.id.action_hints)
-        { alert("Current Lyric Points: 16\n\nGet A Boring Word (5 Lyric Points)\n\nGet A Not Boring Word (10 Lyric Points)\n\nGet An Interesting Word (20 Lyric Points)\n\nGet A Very Interesting Word (50 Lyric Points)\n\nGet Artists' Name (100 Lyric Points)") {
-            title("Purchase Hints For Lyric Points")
-        }.show()
-            return true }
-        if (id == R.id.action_lyrics)
-        { alert("You have unlocked the\n Walk 5 Kilometers Achievement\nHere are 10 Lyric Points") {
+        {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Purchase Hints For Lyric Points\nCurrent Lyric Points: 12")
+            val listItems = ArrayList<String>()
+            listItems.add("Get Artists' Name (100 Lyric Points)")
+            listItems.add("Item2")
+
+            builder.setItems(Array(listItems.size) { i -> listItems[i].toString()}) {dialog, which ->
+                when (which) {
+                    0 -> {
+                        /*val snackbarArtistsName = Snackbar.make(findViewById(R.id.map_Layout), "The Artists' Name is: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
+                        snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener()
+                            collectedLyricsCount = 0
+                            Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
+                            alert(TextUtils.join(", ", collectedLyrics))
+                            {title("Collected Lyrics")}.show()*/
+                    }
+                    1 -> toast("2works")
+                }
+            }
+
+            builder.show()
+
+            return true
+            /*alert("Current Lyric Points: 16\n\nGet A Boring Word (5 Lyric Points)\n\nGet A Not Boring Word (10 Lyric Points)\n\nGet An Interesting Word (20 Lyric Points)\n\nGet A Very Interesting Word (50 Lyric Points)\n\nGet Artists' Name (100 Lyric Points)") {
+            title("Purchase Hints For Lyric Points")*/
+        }
+
+        if (id == R.id.action_lyrics) {
+            collectedLyricsCount = 0
+            Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
+            alert(TextUtils.join(", ", collectedLyrics))
+            {title("Collected Lyrics")}.show()
+            return true
+        }
+        /*{ alert("You have unlocked the\n Walk 5 Kilometers Achievement\nHere are 10 Lyric Points") {
             title("Congratulations!")
             }.show()
-            return true
+            return true*/
             /*alert("You gained a total of 24 Lyric Points this Game\n\nScore: 248\n\nHigh Score: 600") {
                 title("Congratulations. You Guessed Correctly!!")
                 yesButton { toast("Go To Home Screen")}
@@ -132,18 +194,26 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             /*Snackbar.make(coordinatorLayout(), "The Artists Name Is: Queen", Snackbar.LENGTH_INDEFINITE).setAction("Okay", View.OnClickListener() {}).show()*/
             /*startActivity(Intent(this, WinActivity::class.java))
                 return true*/
-
-        }
         if (id == R.id.action_newgame)
         { alert("Are you sure you want to start a new game? All progress will be lost!") {
-            yesButton { toast("Yes") }
-            noButton { toast("No") }
+            yesButton {
+                switchToMode()
+            }
+            noButton {}
             }.show()
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        // use 1 as the default value (this might be the first time the app is run)
+        songNumber = settings.getInt("storedSongNumber", 1)
+        difficulty = settings.getInt("storedModeId", 1)
+    }
 
     override fun onStart() {
         super.onStart()
@@ -210,6 +280,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         collectedLyrics.add(collectedLyric)
                         Log.v("lyrics", collectedLyric)
                         markerHash.remove(marker.name)
+                        collectedLyricsCount++
+                        val snackbarLyricCount = Snackbar.make(findViewById(R.id.map_Layout), "New Lyrics Collected: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
+                        snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener() {
+                            collectedLyricsCount = 0
+                            Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
+                            alert(TextUtils.join(", ", collectedLyrics))
+                            {title("Collected Lyrics")}.show()
+                        })
+                        snackbarLyricCount.setActionTextColor(Color.WHITE)
+                        snackbarLyricCount.show()
                     }
                 }
             }
@@ -239,6 +319,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
+        mMap = googleMap
 
         // Add a marker in Sydney and move the camera
         val sydney = LatLng(55.945, -3.1885)
@@ -257,12 +338,21 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         mMap.uiSettings.isMyLocationButtonEnabled = true
 
         doAsync {
-            DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/lyrics.txt")
-            DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/01/map4.kml")
-            uiThread {
+            //Reset the lists for the new lyrics and markers
+            markersList.clear()
+            lyrics.clear()
+            if (songNumber < 10) {
+                DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$songNumber/map$difficulty.kml")
+                DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$songNumber/lyrics.txt")
+            } else {
+                DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNumber/map$difficulty.kml")
+                DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNumber/lyrics.txt")
+            }
 
+            uiThread {
                 for (marker in markersList) {
                     val coords = marker.point.split(',')
+                    Log.v("coordes", marker.description)
                     when (marker.description) {
                         "unclassified" -> {
                             val temp = mMap.addMarker(MarkerOptions().position(LatLng(coords[1].toDouble(), coords[0].toDouble())).title(marker.name).icon(fromResource(R.drawable.mm_wht_blank_resized)))

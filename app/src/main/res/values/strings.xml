@@ -25,6 +25,7 @@
     <string name="hardModeParagraph">In Hard Mode 75% of the lyrics are available. They are classified as either boring (yellow marker), not boring (yellow marker with black dot), or interesting (orange marker).</string>
     <string name="vHardModeParagraph">In Very Hard Mode 50% of the lyrics are available. They are classified as either boring (yellow marker), or not boring (yellow marker with black dot).</string>
     <string name="extremeModeParagraph">In Extreme Mode 25% of the lyrics are available. They are unclassifed!</string>
+    <string name="action_send">Send</string>
     <string name="action_setting">Settings</string>
     <string name="action_main">Back</string>
     <string name="title_activity_settings">Settings</string>
