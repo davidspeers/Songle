@@ -17,6 +17,7 @@ class ModeActivity : AppCompatActivity() {
     private var buttonId = 1 // id of radio button selected
     private var colourId = 0
     private var storedSongNumber = 1
+    private var gameStarted = false
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +33,11 @@ class ModeActivity : AppCompatActivity() {
         setContentView(R.layout.activity_mode)
 
         playGameButton.setOnClickListener() {
+            val editor = settings.edit()
+            gameStarted = true
+            editor.putBoolean("gameStarted", gameStarted)
+            editor.apply()
+            Log.v("gaming", gameStarted.toString())
             switchToMap()
         }
 

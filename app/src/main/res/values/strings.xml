@@ -144,8 +144,8 @@
 
     <string name="congratulations">Congratulations\nYou Guessed Correctly!!</string>
     <string name="lp_gained">You Gained A Total Of 24 Lyrics Points This Game.</string>
-    <string name="score">Score: 248</string>
-    <string name="highscore">High Score: 600</string>
+    <string name="score">Score: </string>
+    <string name="highscore">High Score: </string>
     <string name="play_again">Play Again</string>
     <string name="go_to_main_menu">Go to Main Menu</string>
 

@@ -22,6 +22,10 @@ import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
+    private var colourId = 0 // id of radio button selected
+    private var gameStarted = false //whether or not a game has been started
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+
     private var receiver = NetworkReceiver()
     private inner class NetworkReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -33,9 +37,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun switchToMode() {
-        val intent = Intent(this, ModeActivity::class.java)
-        startActivity(intent)
+    private fun switchToGame() {
+        if (!gameStarted) {
+            val intent = Intent(this, ModeActivity::class.java)
+            startActivity(intent)
+        } else {
+            val intent = Intent(this, MapsActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     private fun switchToProfile() {
@@ -53,13 +62,9 @@ class MainActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private var colourId = 0 // id of radio button selected
-    val PREFS_FILE = "MyPrefsFile" // for storing preferences
-
     override fun onResume() {
         super.onResume()
-        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-        colourId = settings.getInt("storedColourId", 0)
+
         when (colourId) {
             0 -> {
                 playSongleButton.setBackgroundResource(R.drawable.redplay)
@@ -94,6 +99,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        gameStarted = settings.getBoolean("gameStarted", false)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
             0 -> setTheme(R.style.RedTheme);
@@ -109,7 +115,7 @@ class MainActivity : AppCompatActivity() {
         this.registerReceiver(receiver, filter)
 
         playSongleButton.setOnClickListener() {
-            switchToMode()
+            switchToGame()
         }
 
         profileButton.setOnClickListener() {
@@ -165,6 +171,7 @@ class DownloadCompleteListener {
             Log.v("OutOfLoop", song.title)
         }
 
+
     }
 
 }
@@ -212,118 +219,3 @@ class DownloadXmlTask(private val caller : DownloadCompleteListener) : AsyncTask
     }
 }
 
-// XML Parsing
-class XMLSongParser() {
-
-    data class Song(val number: String, val artist: String, val title: String, val link: String)
-
-    // We don’t use namespaces
-    private val ns: String? = null
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: InputStream): List<Song> {
-        input.use {
-            val parser = Xml.newPullParser()
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,
-                    false)
-            parser.setInput(input, null)
-            parser.nextTag()
-            return readFeed(parser)
-        }
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun readFeed(parser: XmlPullParser): List<Song> {
-        val songs = ArrayList<Song>()
-        parser.require(XmlPullParser.START_TAG, ns, "Songs")
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) {
-                continue
-            }
-            // Starts by looking for the entry tag
-            if (parser.name == "Song") {
-                songs.add(readSong(parser))
-            } else {
-                skip(parser)
-            }
-        }
-        return songs
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun readSong(parser: XmlPullParser): Song {
-        parser.require(XmlPullParser.START_TAG, ns, "Song")
-        var number = ""
-        var artist = ""
-        var title = ""
-        var link = ""
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG)
-                continue
-            when (parser.name) {
-                "Number" -> number = readNumber(parser)
-                "Artist" -> artist = readArtist(parser)
-                "Title" -> title = readTitle(parser)
-                "Link" -> link = readLink(parser)
-                else -> skip(parser)
-            }
-        }
-        return Song(number, artist, title, link)
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readNumber(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "Number")
-        val number = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "Number")
-        return number
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readArtist(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "Artist")
-        val artist = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "Artist")
-        return artist
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readTitle(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "Title")
-        val title = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "Title")
-        return title
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readLink(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "Link")
-        val link = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "Link")
-        return link
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readText(parser: XmlPullParser): String {
-        var result = ""
-        if (parser.next() == XmlPullParser.TEXT) {
-            result = parser.text
-            parser.nextTag()
-        }
-        return result
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun skip(parser: XmlPullParser) {
-        if (parser.eventType != XmlPullParser.START_TAG) {
-            throw IllegalStateException()
-        }
-        var depth = 1
-        while (depth != 0) {
-            when (parser.next()) {
-                XmlPullParser.END_TAG -> depth--
-                XmlPullParser.START_TAG -> depth++
-            }
-        }
-    }
-}

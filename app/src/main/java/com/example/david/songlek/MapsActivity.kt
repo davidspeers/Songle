@@ -7,9 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
-import android.os.AsyncTask
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
@@ -18,13 +16,11 @@ import android.support.v7.app.AppCompatActivity
 import android.text.InputType
 import android.text.TextUtils
 import android.util.Log
-import android.util.Xml
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import com.example.david.songlek.R.menu.menu_map
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -60,27 +56,77 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
     val markerHash = HashMap<String, Marker>()
+
     var collectedLyricsCount = 0
     val collectedLyrics = ArrayList<String>()
     val song = "Bohemian Rhapsody"
+    var lyricPoints = 100
+    val artistsName = "Queen"
 
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
     private var colourId = 0
     private var songNumber = 1
     private var difficulty = 1
-    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+    private var score = 0
+    private var incorrectGuesses = 0
 
     private fun switchToMode() {
         val intent = Intent(this, ModeActivity::class.java)
         startActivity(intent)
     }
 
+    private fun switchToMain() {
+        val intent = Intent(this, MainActivity::class.java)
+        startActivity(intent)
+    }
+
     private fun switchToWin() {
         val intent = Intent(this, WinActivity::class.java)
         startActivity(intent)
+
+        //Values to reset
+        val currentGame = false
+
+
+        //Calculate Final Score
+        //Difficulty Modifier
+        when (difficulty) {
+            1 -> {
+                score = 250
+                score += markerHash.size*10 //Markers Left Bonus
+            }
+            2 -> {
+                score = 200
+                score += markerHash.size*5 //Markers Left Bonus
+            }
+            3 -> {
+                score = 150
+                score += markerHash.size*3 //Markers Left Bonus
+            }
+            4 -> {
+                score = 100
+                score += markerHash.size*2 //Markers Left Bonus
+            }
+            5 -> {
+                score = 50
+                score += markerHash.size*2 //Markers Left Bonus
+            }
+        }
+        score -= incorrectGuesses*5 //Guess Penalty
+        if (score<0) score = 0 //Avoid Negative Score
+
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        // We need an Editor object to make preference changes.
+        val editor = settings.edit()
+        editor.putInt("score", score)
+        // Apply the edits!
+        editor.apply()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        collectedMarkers = settings.getString("collectedMarkers", "")
+        Log.v("collected", collectedMarkers)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
             0 -> setTheme(R.style.RedTheme);
@@ -108,11 +154,115 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         return true
     }
 
+    override fun onBackPressed() {
+        switchToMain()
+    }
+
+    fun buyUnclassified() {
+        if (lyricPoints > 24) {
+            val marker = uncollectedMarkersList[0]
+            uncollectedMarkersList.remove(marker)
+            collectedMarkers = collectedMarkers + "," + marker.name
+            val markerName = markerHash.get(marker.name)
+            if (markerName == null) {
+                //Do nothing
+            } else {
+                markerName.remove()
+                val points = marker.name.split(":")
+                val collectedLyric = lyrics.get(points[0].toInt() - 1)[points[1].toInt() - 1]
+                collectedLyrics.add(collectedLyric)
+                Log.v("lyrics", collectedLyric)
+                markerHash.remove(marker.name)
+                val snackbarBoughtWord = Snackbar.make(findViewById(R.id.map_Layout), "The Word You Bought Is: " + collectedLyric, Snackbar.LENGTH_INDEFINITE)
+                        .setAction("Open Lyrics List", View.OnClickListener() {
+                            collectedLyricsCount = 0
+                            Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
+                            alert(TextUtils.join(", ", collectedLyrics))
+                            { title("Collected Lyrics") }.show()
+                        })
+                snackbarBoughtWord.setActionTextColor(Color.WHITE)
+                snackbarBoughtWord.show()
+                lyricPoints = lyricPoints - 25
+            }
+        } else {
+            notEnoughPoints()
+        }
+    }
+
+    fun buyClassified(string:String, wordCost:Int) {
+        if (lyricPoints > wordCost-1) {
+            var m = uncollectedMarkersList[0]
+
+            loop@ for (marker in uncollectedMarkersList) {
+                m = marker
+                if (marker.description == string) break@loop
+            }
+
+            //Checks if m is not of the requested description
+            if (m.description != string) {
+                val snackbarBoughtWord = Snackbar.make(findViewById(R.id.map_Layout), "There Are No " + string + "Left to Buy", Snackbar.LENGTH_LONG)
+                    .setAction("Open Lyrics List", View.OnClickListener() {
+                        Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
+                        alert(TextUtils.join(", ", collectedLyrics))
+                        { title("Collected Lyrics") }.show()
+                    })
+            snackbarBoughtWord.setActionTextColor(Color.WHITE)
+            snackbarBoughtWord.show()
+            } else {
+                uncollectedMarkersList.remove(m)
+                collectedMarkers = collectedMarkers + "," + m.name
+                val markerName = markerHash.get(m.name)
+                if (markerName == null) {
+                    //Do nothing
+                } else {
+                    markerName.remove()
+                    val points = m.name.split(":")
+                    val collectedLyric = lyrics.get(points[0].toInt() - 1)[points[1].toInt() - 1]
+                    collectedLyrics.add(collectedLyric)
+                    Log.v("lyrics", collectedLyric)
+                    markerHash.remove(m.name)
+                    val snackbarBoughtWord = Snackbar.make(findViewById(R.id.map_Layout), "The Word You Bought Is: " + collectedLyric, Snackbar.LENGTH_INDEFINITE)
+                            .setAction("Open Lyrics List", View.OnClickListener() {
+                                collectedLyricsCount = 0
+                                Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
+                                alert(TextUtils.join(", ", collectedLyrics))
+                                { title("Collected Lyrics") }.show()
+                            })
+                    snackbarBoughtWord.setActionTextColor(Color.WHITE)
+                    snackbarBoughtWord.show()
+                    lyricPoints = lyricPoints - wordCost
+                }
+            }
+        } else {
+            notEnoughPoints()
+        }
+    }
+
+    fun buyArtist() {
+
+        if (lyricPoints > 99){
+            Snackbar.make(findViewById(R.id.map_Layout), "The Artists' Name is: " + artistsName, Snackbar.LENGTH_INDEFINITE)
+                    .setAction("Okay", View.OnClickListener() {})
+                    .setActionTextColor(Color.WHITE)
+                    .show()
+            lyricPoints = lyricPoints - 100
+        } else {
+            notEnoughPoints()
+        }
+
+    }
+
+    fun notEnoughPoints() {
+        Snackbar.make(findViewById(R.id.map_Layout), "You Don't Have Enough Lyric Points", Snackbar.LENGTH_LONG)
+                .setAction("Okay", View.OnClickListener() {})
+                .setActionTextColor(Color.WHITE)
+                .show()
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_submit)
         {
-            mMap.clear()
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Guess The Song Title")
 
@@ -143,30 +293,62 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         if (id == R.id.action_hints)
         {
             val builder = AlertDialog.Builder(this)
-            builder.setTitle("Purchase Hints For Lyric Points\nCurrent Lyric Points: 12")
+            builder.setTitle("Purchase Hints For Lyric Points\nCurrent Lyric Points: " + lyricPoints)
             val listItems = ArrayList<String>()
+            if (difficulty == 1) {
+                listItems.add("Get a Word (25 Lyric Points)")
+            }
+            if (difficulty > 1) {
+                listItems.add("Get a Boring Word (5 Lyric Points)")
+                listItems.add("Get a Not Boring Word (10 Lyric Points)")
+            }
+            if (difficulty > 2) {
+                listItems.add("Get an Interesting Word (20 Lyric Points)")
+            }
+            if (difficulty == 5) {
+                listItems.add("Get a Very Interesting Word (50 Lyric Points)")
+            }
             listItems.add("Get Artists' Name (100 Lyric Points)")
-            listItems.add("Item2")
 
             builder.setItems(Array(listItems.size) { i -> listItems[i].toString()}) {dialog, which ->
                 when (which) {
                     0 -> {
-                        /*val snackbarArtistsName = Snackbar.make(findViewById(R.id.map_Layout), "The Artists' Name is: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
-                        snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener()
-                            collectedLyricsCount = 0
-                            Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
-                            alert(TextUtils.join(", ", collectedLyrics))
-                            {title("Collected Lyrics")}.show()*/
+                        if (difficulty == 1) {
+                            buyUnclassified()
+                        }else {
+                            buyClassified("boring", 5)
+                        }
                     }
-                    1 -> toast("2works")
+                    1 -> {
+                        if (difficulty == 1) {
+                            buyArtist()
+                        } else {
+                            buyClassified("notboring", 10)
+                        }
+                    }
+                    2 -> {
+                        if (difficulty == 2) {
+                            buyArtist()
+                        } else {
+                            buyClassified("interesting", 20)
+                        }
+                    }
+                    3 -> {
+                        if (difficulty == 3 || difficulty == 4) {
+                            buyArtist()
+                        } else {
+                            buyClassified("veryinteresting", 50)
+                        }
+                    }
+                    4 -> {
+                        buyArtist()
+                    }
                 }
             }
 
             builder.show()
 
             return true
-            /*alert("Current Lyric Points: 16\n\nGet A Boring Word (5 Lyric Points)\n\nGet A Not Boring Word (10 Lyric Points)\n\nGet An Interesting Word (20 Lyric Points)\n\nGet A Very Interesting Word (50 Lyric Points)\n\nGet Artists' Name (100 Lyric Points)") {
-            title("Purchase Hints For Lyric Points")*/
         }
 
         if (id == R.id.action_lyrics) {
@@ -225,6 +407,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         if (mGoogleApiClient.isConnected) {
             mGoogleApiClient.disconnect()
         }
+
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        // We need an Editor object to make preference changes.
+        val editor = settings.edit()
+        editor.putInt("incorrectGuesses", incorrectGuesses)
+        editor.putInt("lyricPoints", lyricPoints)
+        editor.putString("collectedMarkers", collectedMarkers)
+        // Apply the edits!
+        editor.apply()
     }
 
     fun createLocationRequest() {
@@ -265,7 +456,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             ${current.getLongitude()})"""
             )
             // Do something with current location
-            for (marker in markersList) {
+            for (marker in uncollectedMarkersList) {
                 val coords = marker.point.split(',')
                 val result = FloatArray(10)
                 Location.distanceBetween(current.latitude, current.longitude, coords[1].toDouble(), coords[0].toDouble(), result)
@@ -280,7 +471,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         collectedLyrics.add(collectedLyric)
                         Log.v("lyrics", collectedLyric)
                         markerHash.remove(marker.name)
+                        collectedMarkers = collectedMarkers + "," + marker.name
                         collectedLyricsCount++
+                        lyricPoints++
                         val snackbarLyricCount = Snackbar.make(findViewById(R.id.map_Layout), "New Lyrics Collected: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
                         snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener() {
                             collectedLyricsCount = 0
@@ -339,7 +532,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
         doAsync {
             //Reset the lists for the new lyrics and markers
-            markersList.clear()
+            uncollectedMarkersList.clear()
             lyrics.clear()
             if (songNumber < 10) {
                 DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$songNumber/map$difficulty.kml")
@@ -350,7 +543,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             }
 
             uiThread {
-                for (marker in markersList) {
+                for (marker in uncollectedMarkersList) {
                     val coords = marker.point.split(',')
                     Log.v("coordes", marker.description)
                     when (marker.description) {
@@ -376,256 +569,35 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         }
                     }
                 }
+                collectPrevMarkers(collectedMarkers, markerHash, collectedLyrics)
             }
         }
     }
 }
 
-val markersList = ArrayList<KmlMarkerParser.Marker>()
+val uncollectedMarkersList = ArrayList<KmlMarkerParser.Marker>()
+
+private var collectedMarkers = ""
 
 val lyrics = ArrayList<List<String>>()
 
-class DownloadLyricsTask() {
-
-    fun execute(vararg urls: String) {
-        try {
-            loadLyricsFromNetwork(urls[0])
-        } catch (e: IOException) {
-            println("<<<< Unable to load content. Check your network connection")
-        }
-    }
-
-    private fun loadLyricsFromNetwork(urlString: String)  {
-        val stream = downloadUrl(urlString)
-        val url = URL(urlString)
-        val reader = BufferedReader(InputStreamReader(url.openStream()))
-        var line = reader.readLine()
-        while (line!=null) {
-            /*for (lyric in line.split("\\s+")) {
-                lyricsLine.add(lyric)
-                Log.v("Working", lyricsLine.get(0))
-                Log.v("Working?", line)
-            }*/
-            val lyricsLine = line.replace(",", "").replace(".", "").replace("!", "").replace("?", "").replace("(", "").replace(")", "").split(" ")
-            //
-            lyrics.add(lyricsLine)
-            Log.v("working", lyricsLine[0])
-            line = reader.readLine()
-        }
-        reader.close();
-    }
-
-    @Throws(IOException::class)
-    private fun downloadUrl(urlString: String): InputStream {
-        val url = URL(urlString)
-        val conn = url.openConnection() as HttpURLConnection
-        // Also available: HttpsURLConnection
-        conn.readTimeout = 10000 // milliseconds
-        conn.connectTimeout = 15000 // milliseconds
-        conn.requestMethod = "GET"
-        conn.doInput = true
-        // Starts the query
-        conn.connect()
-        return conn.inputStream
-    }
-}
-
-class DownloadKmlTask() {
-
-    fun execute(vararg urls: String): String {
-        return try {
-            loadKMLFromNetwork(urls[0])
-        } catch (e: IOException) {
-            "Unable to load content. Check your network connection"
-        } catch (e: XmlPullParserException) {
-            "Error parsing XML"
-        }
-    }
-
-    private fun loadKMLFromNetwork(urlString: String): String  {
-        val result = StringBuilder()
-        val stream = downloadUrl(urlString)
-        val parsedMarkers = KmlMarkerParser().parse(stream)
-        result.append(parsedMarkers.toString())
-        for (marker in parsedMarkers) {
-            markersList.add(marker)
-        }
-        return result.toString()
-    }
-
-    @Throws(IOException::class)
-    private fun downloadUrl(urlString: String): InputStream {
-        val url = URL(urlString)
-        val conn = url.openConnection() as HttpURLConnection
-        // Also available: HttpsURLConnection
-        conn.readTimeout = 10000 // milliseconds
-        conn.connectTimeout = 15000 // milliseconds
-        conn.requestMethod = "GET"
-        conn.doInput = true
-        // Starts the query
-        conn.connect()
-        return conn.inputStream
-    }
-
-}
-
-class KmlMarkerParser() {
-
-    data class Marker(val name: String, val description: String, val styleUrl: String, val point: String)
-
-    // We don’t use namespaces
-    private val ns: String? = null
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    fun parse(input: InputStream): List<Marker> {
-        input.use {
-            val parser = Xml.newPullParser()
-            parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES,
-                    false)
-            parser.setInput(input, null)
-            parser.nextTag()
-            return readFeed(parser)
-        }
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun readFeed(parser: XmlPullParser): List<Marker> {
-        val markers = ArrayList<Marker>()
-        parser.require(XmlPullParser.START_TAG, ns, "kml")
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) {
-                continue
-            }
-            // Starts by looking for the entry tag
-            if (parser.name == "Document") {
-                markers.add(readDocument(parser))
-            } else if (parser.name == "Placemark") {
-                markers.add(readPlacemark(parser))
-            } else {
-                skip(parser)
-            }
-        }
-        return markers
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun readDocument(parser: XmlPullParser): Marker {
-        parser.require(XmlPullParser.START_TAG, ns, "Document")
-        var name = ""
-        var description = ""
-        var styleUrl = ""
-        var Point = ""
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG)
-                continue
-            if (parser.name == "Placemark")
-                continue
-            when (parser.name) {
-                "name" -> name = readName(parser)
-                "description" -> description = readDescription(parser)
-                "styleUrl" -> styleUrl = readStyleUrl(parser)
-                "Point" -> Point = readPoint(parser)
-                else -> skip(parser)
-            }
-        }
-        return Marker(name, description, styleUrl, Point)
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun readPlacemark(parser: XmlPullParser): Marker {
-        parser.require(XmlPullParser.START_TAG, ns, "Placemark")
-        var name = ""
-        var description = ""
-        var styleUrl = ""
-        var Point = ""
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG)
-                continue
-            if (parser.name == "Placemark")
-                continue
-            when (parser.name) {
-                "name" -> name = readName(parser)
-                "description" -> description = readDescription(parser)
-                "styleUrl" -> styleUrl = readStyleUrl(parser)
-                "Point" -> Point = readPoint(parser)
-                else -> skip(parser)
-            }
-        }
-        return Marker(name, description, styleUrl, Point)
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readName(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "name")
-        val name = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "name")
-        return name
-    }
-
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readDescription(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "description")
-        val description = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "description")
-        return description
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readPoint(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "Point")
-        var coordinates = ""
-        while (parser.next() != XmlPullParser.END_TAG) {
-            if (parser.eventType != XmlPullParser.START_TAG) {
-                continue
-            }
-            val tagName = parser.name
-            if (tagName == "coordinates") {
-                coordinates = readCoordinates(parser)
-            } else {
-                skip(parser)
-            }
-        }
-        return coordinates
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readCoordinates(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "coordinates")
-        val coordinates = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "coordinates")
-        return coordinates
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readStyleUrl(parser: XmlPullParser): String {
-        parser.require(XmlPullParser.START_TAG, ns, "styleUrl")
-        val styleUrl = readText(parser)
-        parser.require(XmlPullParser.END_TAG, ns, "styleUrl")
-        return styleUrl
-    }
-
-    @Throws(IOException::class, XmlPullParserException::class)
-    private fun readText(parser: XmlPullParser): String {
-        var result = ""
-        if (parser.next() == XmlPullParser.TEXT) {
-            result = parser.text
-            parser.nextTag()
-        }
-        return result
-    }
-
-    @Throws(XmlPullParserException::class, IOException::class)
-    private fun skip(parser: XmlPullParser) {
-        if (parser.eventType != XmlPullParser.START_TAG) {
-            throw IllegalStateException()
-        }
-        var depth = 1
-        while (depth != 0) {
-            when (parser.next()) {
-                XmlPullParser.END_TAG -> depth--
-                XmlPullParser.START_TAG -> depth++
-            }
+fun collectPrevMarkers(collectedMarkers:String, markerHash:HashMap<String, Marker>, collectedLyrics:ArrayList<String>) {
+    Log.v("collected", "working!")
+    val prevMarkerKeys = collectedMarkers.split(",")
+    for (markerKey in prevMarkerKeys) {
+        val markerName = markerHash.get(markerKey)
+        Log.v("collected", markerName.toString())
+        var count = 0
+        if (markerName == null) {
+            //Do nothing
+        } else {
+            markerName.remove()
+            Log.v("collected", "working?")
+            val points = markerKey.split(":")
+            val collectedLyric = lyrics.get(points[0].toInt()-1)[points[1].toInt()-1]
+            collectedLyrics.add(collectedLyric)
+            Log.v("lyrics", collectedLyric)
+            markerHash.remove(markerKey)
         }
     }
 }
