@@ -6,6 +6,11 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_mode.*
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
+import java.util.*
+
+val songsList = ArrayList<XMLSongParser.Song>()
 
 class ModeActivity : AppCompatActivity() {
 
@@ -16,7 +21,10 @@ class ModeActivity : AppCompatActivity() {
 
     private var buttonId = 1 // id of radio button selected
     private var colourId = 0
-    private var storedSongNumber = 1
+    private var currentSongNumber = 1
+    private var currentSongName = ""
+    private var currentSongArtist = ""
+    private var currentSongLink = ""
     private var gameStarted = false
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
@@ -36,6 +44,7 @@ class ModeActivity : AppCompatActivity() {
             val editor = settings.edit()
             gameStarted = true
             editor.putBoolean("gameStarted", gameStarted)
+            editor.putInt("LyricPointsEarned", 0)
             editor.apply()
             Log.v("gaming", gameStarted.toString())
             switchToMap()
@@ -67,6 +76,19 @@ class ModeActivity : AppCompatActivity() {
                 }
             }
         })
+
+        doAsync {
+            DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
+            uiThread {
+                val rand = Random()
+                val randomSong = songsList.get(rand.nextInt(songsList.size))
+                Log.v("random", randomSong.title)
+                currentSongNumber = randomSong.number.toInt()
+                currentSongName = randomSong.title
+                currentSongArtist = randomSong.artist
+                currentSongLink = randomSong.link
+            }
+        }
     }
 
     override fun onStart() {
@@ -100,7 +122,10 @@ class ModeActivity : AppCompatActivity() {
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("storedModeId", buttonId)
-        editor.putInt("storedSongNumber", storedSongNumber)
+        editor.putInt("currentSongNumber", currentSongNumber)
+        editor.putString("currentSongName", currentSongName)
+        editor.putString("currentSongArtist", currentSongArtist)
+        editor.putString("currentSongLink", currentSongLink)
         // Apply the edits!
         editor.apply()
     }

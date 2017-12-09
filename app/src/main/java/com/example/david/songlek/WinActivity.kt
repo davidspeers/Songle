@@ -13,6 +13,7 @@ class WinActivity : AppCompatActivity() {
     private var colourId = 0
     private var score = 0
     private var highscore = 0
+    private var lyricPointsEarned = 0
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     private fun switchToMain() {
@@ -32,6 +33,9 @@ class WinActivity : AppCompatActivity() {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         score = settings.getInt("score", 0)
         highscore = settings.getInt("highscore", 0)
+        lyricPointsEarned = settings.getInt("lyricPointsEarned", 0)
+        val lyricPointsText = "You Gained A Total Of " + lyricPointsEarned + " Lyrics Points This Game."
+        lyricPointsView.text = lyricPointsText
         val scoreText = "Score: " + score.toString()
         scoreView.text = scoreText
         if (highscore < score) {

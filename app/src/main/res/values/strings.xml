@@ -143,7 +143,7 @@
     <string name="tap_song_to_watch_on_youtube">(Tap Song To Watch on YouTube)</string>
 
     <string name="congratulations">Congratulations\nYou Guessed Correctly!!</string>
-    <string name="lp_gained">You Gained A Total Of 24 Lyrics Points This Game.</string>
+    <string name="lp_gained">You Gained A Total Of X Lyrics Points This Game.</string>
     <string name="score">Score: </string>
     <string name="highscore">High Score: </string>
     <string name="play_again">Play Again</string>

@@ -7,13 +7,13 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Created by David on 08/12/2017.
+ * Created by David on 09/12/2017.
  */
-class DownloadKmlTask() {
+class DownloadXmlTask() {
 
     fun execute(vararg urls: String): String {
         return try {
-            loadKMLFromNetwork(urls[0])
+            loadXmlFromNetwork(urls[0])
         } catch (e: IOException) {
             "Unable to load content. Check your network connection"
         } catch (e: XmlPullParserException) {
@@ -21,13 +21,13 @@ class DownloadKmlTask() {
         }
     }
 
-    private fun loadKMLFromNetwork(urlString: String): String {
+    private fun loadXmlFromNetwork(urlString: String): String {
         val result = StringBuilder()
         val stream = downloadUrl(urlString)
-        val parsedMarkers = KmlMarkerParser().parse(stream)
-        result.append(parsedMarkers.toString())
-        for (marker in parsedMarkers) {
-            uncollectedMarkersList.add(marker)
+        val parsedSongs = XMLSongParser().parse(stream)
+        result.append(parsedSongs.toString())
+        for (song in parsedSongs) {
+            songsList.add(song)
         }
         return result.toString()
     }
@@ -46,3 +46,4 @@ class DownloadKmlTask() {
         return conn.inputStream
     }
 }
+

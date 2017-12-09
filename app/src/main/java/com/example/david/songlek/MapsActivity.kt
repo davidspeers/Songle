@@ -48,6 +48,10 @@ import java.net.HttpURLConnection
 import java.util.*
 import kotlin.collections.ArrayList
 
+
+val uncollectedMarkersList = ArrayList<KmlMarkerParser.Marker>()
+val lyrics = ArrayList<List<String>>()
+
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
     private lateinit var mMap: GoogleMap
     private lateinit var mGoogleApiClient: GoogleApiClient
@@ -59,16 +63,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     var collectedLyricsCount = 0
     val collectedLyrics = ArrayList<String>()
-    val song = "Bohemian Rhapsody"
-    var lyricPoints = 100
-    val artistsName = "Queen"
+
+    private var collectedMarkers = ""
 
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
     private var colourId = 0
-    private var songNumber = 1
     private var difficulty = 1
     private var score = 0
     private var incorrectGuesses = 0
+    private var lyricPoints = 100
+    private var lyricPointsEarned = 0
+    private var newGame = true
+    private var currentSongNumber = 1
+    private var currentSongName = ""
+    private var currentSongArtist = ""
 
     private fun switchToMode() {
         val intent = Intent(this, ModeActivity::class.java)
@@ -85,8 +93,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         startActivity(intent)
 
         //Values to reset
-        val currentGame = false
-
+        newGame = true
 
         //Calculate Final Score
         //Difficulty Modifier
@@ -119,14 +126,33 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("score", score)
+        editor.putBoolean("newGame", newGame)
         // Apply the edits!
         editor.apply()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-        collectedMarkers = settings.getString("collectedMarkers", "")
-        Log.v("collected", collectedMarkers)
+        newGame = settings.getBoolean("newGame", true)
+        if (!newGame) {
+            collectedMarkers = settings.getString("collectedMarkers", "")
+            Log.v("collected", collectedMarkers)
+        }
+
+        //Now newGame is false unless we start a new game
+        newGame = false
+        // We need an Editor object to make preference changes.
+        val editor = settings.edit()
+        editor.putInt("score", score)
+        editor.putBoolean("newGame", newGame)
+        // Apply the edits!
+        editor.apply()
+
+        lyricPoints = settings.getInt("lyricPoints", 1)
+        currentSongNumber = settings.getInt("currentSongNumber", 1)
+        currentSongName = settings.getString("currentSongName", "")
+        currentSongArtist = settings.getString("currentSongArtist", "")
+
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
             0 -> setTheme(R.style.RedTheme);
@@ -241,7 +267,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     fun buyArtist() {
 
         if (lyricPoints > 99){
-            Snackbar.make(findViewById(R.id.map_Layout), "The Artists' Name is: " + artistsName, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(findViewById(R.id.map_Layout), "The Artists' Name is: " + currentSongArtist, Snackbar.LENGTH_INDEFINITE)
                     .setAction("Okay", View.OnClickListener() {})
                     .setActionTextColor(Color.WHITE)
                     .show()
@@ -276,7 +302,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             builder.setPositiveButton("Okay", DialogInterface.OnClickListener() { dialog, id ->
                 ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 Log.v("dialog", input.text.toString())
-                if (song.replace(" ", "").equals(input.text.toString().replace(" ", ""), ignoreCase = true)) {
+                if (currentSongName.replace(" ", "").equals(input.text.toString().replace(" ", ""), ignoreCase = true)) {
                     switchToWin()
                 }
             })
@@ -379,6 +405,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         if (id == R.id.action_newgame)
         { alert("Are you sure you want to start a new game? All progress will be lost!") {
             yesButton {
+                newGame = true
+                val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+                // We need an Editor object to make preference changes.
+                val editor = settings.edit()
+                editor.putBoolean("newGame", newGame)
+                // Apply the edits!
+                editor.apply()
                 switchToMode()
             }
             noButton {}
@@ -393,7 +426,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // use 1 as the default value (this might be the first time the app is run)
-        songNumber = settings.getInt("storedSongNumber", 1)
+        currentSongNumber = settings.getInt("currentSongNumber", 1)
         difficulty = settings.getInt("storedModeId", 1)
     }
 
@@ -414,6 +447,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         editor.putInt("incorrectGuesses", incorrectGuesses)
         editor.putInt("lyricPoints", lyricPoints)
         editor.putString("collectedMarkers", collectedMarkers)
+        // Apply the edits!
+        editor.apply()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (mGoogleApiClient.isConnected) {
+            mGoogleApiClient.disconnect()
+        }
+
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        // We need an Editor object to make preference changes.
+        val editor = settings.edit()
+        editor.putInt("lyricPointsEarned", lyricPointsEarned)
         // Apply the edits!
         editor.apply()
     }
@@ -474,6 +521,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         collectedMarkers = collectedMarkers + "," + marker.name
                         collectedLyricsCount++
                         lyricPoints++
+                        lyricPointsEarned++
                         val snackbarLyricCount = Snackbar.make(findViewById(R.id.map_Layout), "New Lyrics Collected: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
                         snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener() {
                             collectedLyricsCount = 0
@@ -534,12 +582,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             //Reset the lists for the new lyrics and markers
             uncollectedMarkersList.clear()
             lyrics.clear()
-            if (songNumber < 10) {
-                DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$songNumber/map$difficulty.kml")
-                DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$songNumber/lyrics.txt")
+            if (currentSongNumber < 10) {
+                DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$currentSongNumber/map$difficulty.kml")
+                DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/0$currentSongNumber/lyrics.txt")
             } else {
-                DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNumber/map$difficulty.kml")
-                DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$songNumber/lyrics.txt")
+                DownloadKmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$currentSongNumber/map$difficulty.kml")
+                DownloadLyricsTask().execute("https://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/$currentSongNumber/lyrics.txt")
             }
 
             uiThread {
@@ -569,19 +617,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         }
                     }
                 }
-                collectPrevMarkers(collectedMarkers, markerHash, collectedLyrics)
+                collectPrevMarkers(collectedMarkers, markerHash, collectedLyrics, lyrics)
             }
         }
     }
 }
 
-val uncollectedMarkersList = ArrayList<KmlMarkerParser.Marker>()
-
-private var collectedMarkers = ""
-
-val lyrics = ArrayList<List<String>>()
-
-fun collectPrevMarkers(collectedMarkers:String, markerHash:HashMap<String, Marker>, collectedLyrics:ArrayList<String>) {
+fun collectPrevMarkers(collectedMarkers:String, markerHash:HashMap<String, Marker>, collectedLyrics:ArrayList<String>, lyrics:ArrayList<List<String>>) {
     Log.v("collected", "working!")
     val prevMarkerKeys = collectedMarkers.split(",")
     for (markerKey in prevMarkerKeys) {
@@ -601,3 +643,4 @@ fun collectPrevMarkers(collectedMarkers:String, markerHash:HashMap<String, Marke
         }
     }
 }
+
