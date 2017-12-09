@@ -23,7 +23,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity() {
 
     private var colourId = 0 // id of radio button selected
-    private var gameStarted = false //whether or not a game has been started
+    private var newGame = false //whether or not a new game needs to start
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     private var receiver = NetworkReceiver()
@@ -38,12 +38,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun switchToGame() {
-        if (!gameStarted) {
+        if (newGame) {
             val intent = Intent(this, ModeActivity::class.java)
             startActivity(intent)
+            Log.v("switching", "main2mode")
         } else {
             val intent = Intent(this, MapsActivity::class.java)
             startActivity(intent)
+            Log.v("switching", "main2map")
+
         }
     }
 
@@ -99,7 +102,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-        gameStarted = settings.getBoolean("gameStarted", false)
+        newGame = settings.getBoolean("newGame", false)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
             0 -> setTheme(R.style.RedTheme);
@@ -130,10 +133,6 @@ class MainActivity : AppCompatActivity() {
             switchToUnlockedSongs()
         }
 
-        val caller = DownloadCompleteListener()
-
-        DownloadXmlTask(caller).execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -158,64 +157,4 @@ class MainActivity : AppCompatActivity() {
 
 }
 
-val songsList = ArrayList<XMLSongParser.Song>()
-
-class DownloadCompleteListener {
-    fun downloadComplete(result: String){
-        //create snackbar result, if result not empty print success
-        Log.v("Outside", result)
-        //for (song in result) {
-        //    Log.v("Outside", song)
-        //}
-        for (song in songsList) {
-            Log.v("OutOfLoop", song.title)
-        }
-
-
-    }
-
-}
-
-class DownloadXmlTask(private val caller : DownloadCompleteListener) : AsyncTask<String, Void, String>() {
-
-    override fun doInBackground(vararg urls: String): String {
-        return try {
-            loadXmlFromNetwork(urls[0])
-        } catch (e: IOException) {
-            "Unable to load content. Check your network connection"
-        } catch (e: XmlPullParserException) {
-            "Error parsing XML"
-        }
-    }
-
-    private fun loadXmlFromNetwork(urlString: String): String {
-        val result = StringBuilder()
-        val stream = downloadUrl(urlString)
-        val parsedSongs = XMLSongParser().parse(stream)
-        result.append(parsedSongs.toString())
-        for (song in parsedSongs) {
-            songsList.add(song)
-        }
-        return result.toString()
-    }
-
-    @Throws(IOException::class)
-    private fun downloadUrl(urlString: String): InputStream {
-        val url = URL(urlString)
-        val conn = url.openConnection() as HttpURLConnection
-        // Also available: HttpsURLConnection
-        conn.readTimeout = 10000 // milliseconds
-        conn.connectTimeout = 15000 // milliseconds
-        conn.requestMethod = "GET"
-        conn.doInput = true
-        // Starts the query
-        conn.connect()
-        return conn.inputStream
-    }
-
-    override fun onPostExecute(result: String) {
-        super.onPostExecute(result)
-        caller.downloadComplete(result)
-    }
-}
 
