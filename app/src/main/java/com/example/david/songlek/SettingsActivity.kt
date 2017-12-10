@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.activity_mode.*
@@ -61,8 +62,15 @@ class SettingsActivity : AppCompatActivity() {
 
         resetProgressButton.setOnClickListener() {
             alert("Are You Sure You Want To Delete All Your Progress?") {
-                yesButton { toast("Yess!!!") }
-                noButton { }
+                positiveButton("I'm Sure") {
+                    val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+                    settings.edit().clear().apply()
+                    //Log.v("checker", settings.getInt("storedColourId", 0).toString())
+                    //settings.edit().putInt("storedColourId", 0).apply()
+                    colourId = 0 //change colourId to default
+                    switchToMain()
+                    toast("Progress Deleted") }
+                negativeButton("Cancel") { }
             }.show()
         }
     }
