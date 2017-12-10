@@ -62,9 +62,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var mLastLocation: Location? = null
     val TAG = "MapsActivity"
     val markerHash = HashMap<String, Marker>()
-
     var collectedLyricsCount = 0
     val collectedLyrics = ArrayList<String>()
+    var previousLocation: Location? = null
+    var startTime : Long = 0
 
     private var collectedMarkers = ""
 
@@ -79,6 +80,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var currentSongNumber = 1
     private var currentSongName = ""
     private var currentSongArtist = ""
+    private var unlockedSongNumbers = ""
+    private var totalDistanceTravelled = 0
+    private var totalTimePlayed : Long = 0
 
     private fun switchToMode() {
         val intent = Intent(this, ModeActivity::class.java)
@@ -125,10 +129,15 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         if (score<0) score = 0 //Avoid Negative Score
 
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+
+        unlockedSongNumbers = settings.getString("unlockedSongNumbers", "")
+        unlockedSongNumbers += "," + currentSongNumber.toString()
+
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("score", score)
         editor.putBoolean("newGame", newGame)
+        editor.putString("unlockedSongNumbers", unlockedSongNumbers)
         // Apply the edits!
         editor.apply()
     }
@@ -428,10 +437,14 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     override fun onResume() {
         super.onResume()
 
+        startTime = System.currentTimeMillis()
+
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // use 1 as the default value (this might be the first time the app is run)
         currentSongNumber = settings.getInt("currentSongNumber", 1)
         difficulty = settings.getInt("storedModeId", 1)
+        totalDistanceTravelled = settings.getInt("totalDistanceTravelled", 0)
+        Log.v("totalDistanceTravelled", totalDistanceTravelled.toString())
     }
 
     override fun onStart() {
@@ -446,13 +459,22 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         }
 
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+
+        totalTimePlayed = settings.getLong("totalTimePlayed", totalTimePlayed)
+        totalTimePlayed += (System.currentTimeMillis() - startTime)
+
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("incorrectGuesses", incorrectGuesses)
         editor.putInt("lyricPoints", lyricPoints)
+        editor.putInt("totalDistanceTravelled", totalDistanceTravelled)
+        editor.putLong("totalTimePlayed", totalTimePlayed)
         editor.putString("collectedMarkers", collectedMarkers)
         // Apply the edits!
         editor.apply()
+
+        Log.v("totalTimePlayed", totalTimePlayed.toString())
+
     }
 
     override fun onPause() {
@@ -525,6 +547,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             (${current.getLatitude()},
             ${current.getLongitude()})"""
             )
+            if (previousLocation != null) {
+                totalDistanceTravelled += current.distanceTo(previousLocation).toInt()
+            }
+
             // Do something with current location
             for (marker in uncollectedMarkersList) {
                 val coords = marker.point.split(',')
@@ -557,6 +583,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                     }
                 }
             }
+            previousLocation = current
         }
     }
 

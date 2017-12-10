@@ -19,14 +19,15 @@ class UnlockedSongsUI(val UnlockedSongsAdapter: UnlockedSongsAdapter) : AnkoComp
         return relativeLayout {
             var todoList : ListView? =null
 
-
             //layout to display ListView
             verticalLayout {
                 todoList=listView {
                     adapter = UnlockedSongsAdapter
                     onItemClick { adapterView, view, i, l ->
-                        //startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(UnlockedSongsAdapter.getItem(i).link)))
-                        true
+                        val peanut : String = adapter.getItem(i) as String
+                        val uri = Uri.parse(peanut)
+                        val i = Intent(Intent.ACTION_VIEW, uri)
+                        context.startActivity(i)
                     }
                 }
             }.lparams {

@@ -33,49 +33,53 @@ import java.util.*
 
 class UnlockedSongsActivity : AppCompatActivity() {
 
-    val task_list = ArrayList<String>()         //list consisting of tasks
-    var title = ""
-    var artist = ""
-    var link = ""
+    val task_list = ArrayList<XMLSongParser.Song>()         //list consisting of tasks
 
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
     private var unlockedSongNumbers = ""
+    private var colourId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        doAsync {
-            DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
-            uiThread {
-                val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-                unlockedSongNumbers = settings.getString("unlockedSongNumbers", "")
-                Log.v("unlockedSongs", unlockedSongNumbers)
-                val unlockedSongsList = unlockedSongNumbers.split(",")
-                for (songNumber in unlockedSongsList) {
-                    //add if songslist < greatest number
-                    if (songNumber == "") {
-                        //Do Nothing
-                    } else {
-                        task_list.add(songsList[songNumber.toInt()].title)
-                        Log.v("unlockedSongs", songsList[songNumber.toInt()].title)
-                    }
-                }
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+
+        colourId = settings.getInt("storedColourId", 0)
+        when (colourId) {
+            0 -> setTheme(R.style.RedTheme);
+            1 -> setTheme(R.style.BlueTheme);
+            2 -> setTheme(R.style.GreenTheme);
+            3 -> setTheme(R.style.PurpleTheme);
+        }
+
+        unlockedSongNumbers = settings.getString("unlockedSongNumbers", "")
+        Log.v("unlockedSongs", unlockedSongNumbers)
+        val unlockedSongsList = unlockedSongNumbers.split(",")
+        for (songNumber in unlockedSongsList) {
+            //add if songslist < greatest number
+            if (songNumber == "") {
+                //Do Nothing
+            } else {
+                //Need a check that songslist is > 1 (else you get an error if it hasn't loaded)
+                task_list.add(songsList[songNumber.toInt()-1])
+                Log.v("unlockedSongs", songsList[songNumber.toInt()-1].title)
             }
         }
 
 
 
-        savedInstanceState?.let {
+
+        /*savedInstanceState?.let {
             val arrayList = savedInstanceState.get("ToDoList")
             task_list.addAll(arrayList as List<String>)
-        }
+        }*/
         var adapter=UnlockedSongsAdapter(task_list)      //define adapter
         var ui = UnlockedSongsUI(adapter)                //define Anko UI Layout to be used
         ui.setContentView(this)                 //Set Anko UI to this Activity
 
     }
-    override fun onSaveInstanceState(outState: Bundle?) {
+    /*override fun onSaveInstanceState(outState: Bundle?) {
         outState?.putStringArrayList("ToDoList", task_list)
         super.onSaveInstanceState(outState)
-    }
+    }*/
 }

@@ -13,6 +13,7 @@ import android.util.Xml
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.content_main.*
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.longToast
 import org.jetbrains.anko.toast
 import org.xmlpull.v1.XmlPullParser
@@ -110,6 +111,10 @@ class MainActivity : AppCompatActivity() {
         var filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         this.registerReceiver(receiver, filter)
 
+        doAsync {
+            DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
+        }
+
         playSongleButton.setOnClickListener() {
             if (receiver.connectedToInternet) {
                 switchToGame()
@@ -127,7 +132,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         unlockedSongsButton.setOnClickListener() {
-            switchToUnlockedSongs()
+            if (receiver.connectedToInternet) {
+                switchToUnlockedSongs()
+            } else {
+                longToast("You Need to be Connected to the Internet to Play Songle!")
+            }
         }
 
     }

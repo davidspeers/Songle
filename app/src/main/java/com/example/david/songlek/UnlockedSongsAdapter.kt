@@ -12,7 +12,7 @@ import android.widget.LinearLayout.HORIZONTAL
 import org.jetbrains.anko.*
 import java.util.*
 
-class UnlockedSongsAdapter(val list: ArrayList<String> = ArrayList<String>()) : BaseAdapter() {
+class UnlockedSongsAdapter(val list: ArrayList<XMLSongParser.Song> = ArrayList<XMLSongParser.Song>()) : BaseAdapter() {
     override fun getView(i : Int, v : View?, parent : ViewGroup?) : View {
         return with(parent!!.context) {
             //taskNum will serve as the S.No. of the list starting from 1
@@ -35,7 +35,7 @@ class UnlockedSongsAdapter(val list: ArrayList<String> = ArrayList<String>()) : 
 
                 textView {
                     id = 0
-                    text=list.get(i)
+                    text=list.get(i).title
                     textSize = 16f
                     typeface = DEFAULT_BOLD
                     padding =dip(5)
@@ -45,7 +45,7 @@ class UnlockedSongsAdapter(val list: ArrayList<String> = ArrayList<String>()) : 
     }
 
     override fun getItem(position : Int) : String {
-        return list[position]
+        return list[position].link
     }
 
     override fun getCount() : Int {
@@ -58,7 +58,7 @@ class UnlockedSongsAdapter(val list: ArrayList<String> = ArrayList<String>()) : 
     }
 
     //function to add an item to the list
-    fun add(text: String) {
+    fun add(text: XMLSongParser.Song) {
         list.add(list.size, text)
         notifyDataSetChanged()
     }

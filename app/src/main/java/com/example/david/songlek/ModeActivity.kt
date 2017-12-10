@@ -13,7 +13,7 @@ import org.jetbrains.anko.longToast
 import org.jetbrains.anko.uiThread
 import java.util.*
 
-val songsList = ArrayList<XMLSongParser.Song>()
+//val songsList = ArrayList<XMLSongParser.Song>()
 
 class ModeActivity : AppCompatActivity() {
 
