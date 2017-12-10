@@ -2,11 +2,14 @@ package com.example.david.songlek
 
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.net.ConnectivityManager
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import kotlinx.android.synthetic.main.activity_mode.*
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.longToast
 import org.jetbrains.anko.uiThread
 import java.util.*
 
@@ -19,7 +22,9 @@ class ModeActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    private var buttonId = 1 // id of radio button selected
+    private var receiver = NetworkReceiver()
+
+    private var buttonId = 4 // id of radio button selected
     private var colourId = 0
     private var currentSongNumber = 1
     private var currentSongName = ""
@@ -40,14 +45,21 @@ class ModeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mode)
 
+        var filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        this.registerReceiver(receiver, filter)
+
         playGameButton.setOnClickListener() {
-            val editor = settings.edit()
-            gameStarted = true
-            editor.putBoolean("gameStarted", gameStarted)
-            editor.putInt("LyricPointsEarned", 0)
-            editor.apply()
-            Log.v("gaming", gameStarted.toString())
-            switchToMap()
+            if (receiver.connectedToInternet) {
+                val editor = settings.edit()
+                gameStarted = true
+                editor.putBoolean("gameStarted", gameStarted)
+                editor.putInt("LyricPointsEarned", 0)
+                editor.apply()
+                Log.v("gaming", gameStarted.toString())
+                switchToMap()
+            } else {
+                longToast("You Need to be Connected to the Internet to Play Songle!")
+            }
         }
 
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
@@ -96,7 +108,7 @@ class ModeActivity : AppCompatActivity() {
         // Restore preferences
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // use 1 as the default value (this might be the first time the app is run)
-        buttonId = settings.getInt("storedModeId", 1)
+        buttonId = settings.getInt("storedModeId", 4)
         colourId = settings.getInt("storedColourId", 0)
 
         when (buttonId) {

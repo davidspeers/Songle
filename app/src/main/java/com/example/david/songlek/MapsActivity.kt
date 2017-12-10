@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.support.v4.content.PermissionChecker
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.InputType
@@ -21,6 +22,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
+import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -148,7 +150,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Apply the edits!
         editor.apply()
 
-        lyricPoints = settings.getInt("lyricPoints", 1)
+        lyricPoints = settings.getInt("lyricPoints", 100)
         currentSongNumber = settings.getInt("currentSongNumber", 1)
         currentSongName = settings.getString("currentSongName", "")
         currentSongArtist = settings.getString("currentSongArtist", "")
@@ -302,14 +304,16 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             builder.setPositiveButton("Okay", DialogInterface.OnClickListener() { dialog, id ->
                 ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 Log.v("dialog", input.text.toString())
-                if (currentSongName.replace(" ", "").equals(input.text.toString().replace(" ", ""), ignoreCase = true)) {
+                val keepChars = Regex("[^A-Za-z0-9]")
+                if (keepChars.replace(currentSongName, "").equals(keepChars.replace(input.text.toString(), ""), ignoreCase = true)) {
                     switchToWin()
+                } else {
+                    toast("Sorry that was Incorrect")
                 }
             })
             builder.setNegativeButton("Cancel", DialogInterface.OnClickListener() { dialog, id ->
                 ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 dialog.cancel()
-                toast("Sorry that was Incorrect")
             })
 
             builder.show()
@@ -465,7 +469,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         editor.apply()
     }
 
-    fun createLocationRequest() {
+    private fun createLocationRequest() {
         //Set the parameters for the location request
         val mLocationRequest = LocationRequest()
         mLocationRequest.interval = 5000 // preferably every 5 seconds
@@ -476,6 +480,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         val permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
         if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+        }
+
+
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (grantResults.contains(PermissionChecker.PERMISSION_DENIED)) {
+            switchToMain()
+            longToast("Songle Requires Location Permissions to be Played")
+        } else {
+            //These lines restart the MapsActivity after permissions are granted, so that the location marker and button appear.
+            overridePendingTransition(0, 0);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            finish();
+            overridePendingTransition(0, 0);
+            startActivity(intent);
         }
     }
 
@@ -489,8 +510,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Can we access the user’s current location?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
+            Log.v("connector", "1")
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), permissionsRequestAccessFineLocation)
+            Log.v("connector", "2")
         }
     }
 
@@ -539,6 +562,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     override fun onConnectionSuspended(flag: Int) {
         println(" >>>> onConnectionSuspended")
+        longToast("Please Check Your Network Connection")
     }
 
     override fun onConnectionFailed(result: ConnectionResult) {
@@ -546,6 +570,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // could not be established. Display an error message, or handle
         // the failure silently
         println(" >>>> onConnectionFailed")
+        longToast("A Connection to Google Could Not Be Established.\nTry Checking Your Connection & Reloading Songle")
     }
 
     /**
@@ -559,7 +584,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
      */
 
     override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
         mMap = googleMap
 
         // Add a marker in Sydney and move the camera

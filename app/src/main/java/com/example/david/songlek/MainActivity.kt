@@ -13,6 +13,8 @@ import android.util.Xml
 import android.view.Menu
 import android.view.MenuItem
 import kotlinx.android.synthetic.main.content_main.*
+import org.jetbrains.anko.longToast
+import org.jetbrains.anko.toast
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
@@ -27,15 +29,6 @@ class MainActivity : AppCompatActivity() {
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     private var receiver = NetworkReceiver()
-    private inner class NetworkReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val connMgr = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            val networkInfo = connMgr.activeNetworkInfo
-            if (networkInfo == null) {
-                //Snackbar saying it doesn't work
-            }
-        }
-    }
 
     private fun switchToGame() {
         if (newGame) {
@@ -102,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-        newGame = settings.getBoolean("newGame", false)
+        newGame = settings.getBoolean("newGame", true)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
             0 -> setTheme(R.style.RedTheme);
@@ -118,7 +111,11 @@ class MainActivity : AppCompatActivity() {
         this.registerReceiver(receiver, filter)
 
         playSongleButton.setOnClickListener() {
-            switchToGame()
+            if (receiver.connectedToInternet) {
+                switchToGame()
+            } else {
+                longToast("You Need to be Connected to the Internet to Play Songle!")
+            }
         }
 
         profileButton.setOnClickListener() {
