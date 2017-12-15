@@ -14,6 +14,8 @@ import org.jetbrains.anko.*
 class SettingsActivity : AppCompatActivity() {
 
     private var colourId = 0 // id of radio button selected
+    private var highscore = 0
+    private var allAchievementsUnlocked = false
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,14 +49,16 @@ class SettingsActivity : AppCompatActivity() {
             }
         })
 
-        var greenClickable = true
+        highscore = settings.getInt("highscore", 0)
+        var greenClickable = false
+        if (highscore>1000) greenClickable = true
         if (greenClickable) {
             greenButton.setEnabled(true)
         } else {
             greenButton.setEnabled(false)
         }
-        var purpleClickable = true
-        if (purpleClickable) {
+        allAchievementsUnlocked = settings.getBoolean("allAchievementsUnlocked", false)
+        if (allAchievementsUnlocked) {
             purpleButton.setEnabled(true)
         } else {
             purpleButton.setEnabled(false)
