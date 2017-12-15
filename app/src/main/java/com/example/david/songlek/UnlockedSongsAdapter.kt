@@ -1,8 +1,5 @@
 package com.example.david.songlek
 
-/**
- * Created by David on 10/12/2017.
- */
 import android.graphics.Typeface
 import android.graphics.Typeface.DEFAULT_BOLD
 import android.view.View
@@ -13,10 +10,11 @@ import org.jetbrains.anko.*
 import java.util.*
 
 class UnlockedSongsAdapter(val list: ArrayList<XMLSongParser.Song> = ArrayList<XMLSongParser.Song>()) : BaseAdapter() {
+    //Describe ListView Layout using Anko
     override fun getView(i : Int, v : View?, parent : ViewGroup?) : View {
         return with(parent!!.context) {
-            //taskNum will serve as the S.No. of the list starting from 1
-            var taskNum: Int = i +1
+            //taskNum allows the ListView to have an incrementing number beside each song
+            val taskNum: Int = i +1
 
             //Layout for a list view item
             linearLayout {
@@ -44,10 +42,12 @@ class UnlockedSongsAdapter(val list: ArrayList<XMLSongParser.Song> = ArrayList<X
         }
     }
 
-    override fun getItem(position : Int) : String {
-        return list[position].link
+    //Returns the String stored at position x of the list
+    override fun getItem(x : Int) : String {
+        return list[x].link
     }
 
+    //Returns the length of the list
     override fun getCount() : Int {
         return list.size
     }
@@ -57,7 +57,7 @@ class UnlockedSongsAdapter(val list: ArrayList<XMLSongParser.Song> = ArrayList<X
         return 0L
     }
 
-    //function to add an item to the list
+    //function to add a song to the list
     fun add(text: XMLSongParser.Song) {
         list.add(list.size, text)
         notifyDataSetChanged()

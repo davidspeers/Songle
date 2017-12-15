@@ -1,19 +1,12 @@
 package com.example.david.songlek
 
-/**
- * Created by David on 10/12/2017.
- */
 import android.content.Intent
 import android.net.Uri
-import android.support.v4.content.ContextCompat
-import android.view.Gravity
 import android.view.View
-import android.widget.FrameLayout
 import android.widget.ListView
 import org.jetbrains.anko.*
-import org.jetbrains.anko.appcompat.v7.toolbar
-import org.jetbrains.anko.design.floatingActionButton
 
+//Describes ProfileActivity UI
 class UnlockedSongsUI(val UnlockedSongsAdapter: UnlockedSongsAdapter) : AnkoComponent<UnlockedSongsActivity> {
     override fun createView(ui: AnkoContext<UnlockedSongsActivity>): View = with(ui) {
         return relativeLayout {
@@ -23,6 +16,7 @@ class UnlockedSongsUI(val UnlockedSongsAdapter: UnlockedSongsAdapter) : AnkoComp
             verticalLayout {
                 todoList=listView {
                     adapter = UnlockedSongsAdapter
+                    // onItemClick go to the corresponding YouTube link
                     onItemClick { adapterView, view, i, l ->
                         val peanut : String = adapter.getItem(i) as String
                         val uri = Uri.parse(peanut)
@@ -38,6 +32,4 @@ class UnlockedSongsUI(val UnlockedSongsAdapter: UnlockedSongsAdapter) : AnkoComp
 
     }
 
-    //function to get total number of items in list
-    fun getTotalListItems(list: ListView?) = list?.adapter?.count ?: 0
 }

@@ -27,6 +27,7 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //Set correct theme colour
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
@@ -35,6 +36,7 @@ class ProfileActivity : AppCompatActivity() {
             2 -> setTheme(R.style.GreenTheme)
             3 -> setTheme(R.style.PurpleTheme)
         }
+        //get sharedpreferences values
         lyricPoints = settings.getInt("lyricPoints", 0)
         totalLyricPoints = settings.getInt("totalLyricPoints", 0)
         highscore = settings.getInt("highscore", 0)
@@ -43,6 +45,7 @@ class ProfileActivity : AppCompatActivity() {
         totalTimePlayed = settings.getLong("totalTimePlayed", 0)
         changedTheme = settings.getBoolean("changedTheme", false)
 
+        //Split string to get a list
         val unlockedSongsList = unlockedSongNumbers.split(",")
         val unlockedSongs = unlockedSongsList.size
 

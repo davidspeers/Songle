@@ -1,19 +1,15 @@
 package com.example.david.songlek
 
-/**
- * Created by David on 10/12/2017.
- */
 import android.graphics.Typeface
-import android.graphics.Typeface.DEFAULT_BOLD
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.LinearLayout
-import android.widget.LinearLayout.HORIZONTAL
 import org.jetbrains.anko.*
 import java.util.*
 
 class ProfileAdapter(val list: ArrayList<String> = ArrayList<String>()) : BaseAdapter() {
+    //Describe ListView Layout using Anko
     override fun getView(i : Int, v : View?, parent : ViewGroup?) : View {
         return with(parent!!.context) {
 
@@ -43,10 +39,12 @@ class ProfileAdapter(val list: ArrayList<String> = ArrayList<String>()) : BaseAd
         }
     }
 
-    override fun getItem(position : Int) : String {
-        return list[position]
+    //Returns the String stored at position x of the list
+    override fun getItem(x : Int) : String {
+        return list[x]
     }
 
+    //Returns the length of the list
     override fun getCount() : Int {
         return list.size
     }
@@ -56,7 +54,7 @@ class ProfileAdapter(val list: ArrayList<String> = ArrayList<String>()) : BaseAd
         return 0L
     }
 
-    //function to add an item to the list
+    //function to add a String to the list
     fun add(text: String) {
         list.add(list.size, text)
         notifyDataSetChanged()
