@@ -7,9 +7,6 @@ import android.net.ConnectivityManager
 import android.util.Log
 import org.jetbrains.anko.doAsync
 
-/**
- * Created by David on 09/12/2017.
- */
 class NetworkReceiver : BroadcastReceiver() {
     var connectedToInternet = false
 
@@ -18,8 +15,9 @@ class NetworkReceiver : BroadcastReceiver() {
         val networkInfo = connMgr.activeNetworkInfo
         if (networkInfo?.type == ConnectivityManager.TYPE_WIFI) {
             // Wi´Fi is connected, so use Wi´Fi
-            Log.v("connectoe", "connection")
+            //Log.d("connections", "Wifi connection")
             connectedToInternet = true
+            //If songsList not downloaded
             if (songsList.size == 0) {
                 doAsync {
                     DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
@@ -27,8 +25,9 @@ class NetworkReceiver : BroadcastReceiver() {
             }
         } else if (networkInfo != null) {
             // Have a network connection and permission, so use data
-            Log.v("connectoe", "connections")
+            //Log.d("connections", "Network connections")
             connectedToInternet = true
+            //If songsList not downloaded
             if (songsList.size == 0) {
                 doAsync {
                     DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
@@ -36,7 +35,7 @@ class NetworkReceiver : BroadcastReceiver() {
             }
         } else {
             // No Wi´Fi and no network connection
-            Log.v("connectoe", "connectionz")
+            //Log.d("connections", "No Connection")
             connectedToInternet = false
         }
     }

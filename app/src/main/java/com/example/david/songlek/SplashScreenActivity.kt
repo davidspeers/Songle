@@ -10,12 +10,13 @@ class SplashScreenActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash_screen)
 
+        //let the splashscreen run for 1 second
         val background = object : Thread() {
             override fun run() {
                 Thread.sleep((1000).toLong())
 
                 startActivity(Intent(baseContext, MainActivity::class.java))
-                finish()
+                finish() //now backbutton pressed from MainActivity doesn't go back to SplashScreenActivity
             }
 
         }

@@ -6,11 +6,9 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
 
-/**
- * Created by David on 07/12/2017.
- */
 class KmlMarkerParser() {
 
+    //Marker class
     data class Marker(val name: String, val description: String, val styleUrl: String, val point: String)
 
     // We don’t use namespaces

@@ -7,9 +7,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.ArrayList
 
-/**
- * Created by David on 09/12/2017.
- */
 val songsList = ArrayList<XMLSongParser.Song>()
 
 class DownloadXmlTask() {
@@ -29,6 +26,7 @@ class DownloadXmlTask() {
         val stream = downloadUrl(urlString)
         val parsedSongs = XMLSongParser().parse(stream)
         result.append(parsedSongs.toString())
+        //for every Song I parse add it to the songsList
         for (song in parsedSongs) {
             songsList.add(song)
         }

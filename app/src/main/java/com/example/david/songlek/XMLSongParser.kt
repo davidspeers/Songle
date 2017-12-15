@@ -6,12 +6,10 @@ import org.xmlpull.v1.XmlPullParserException
 import java.io.IOException
 import java.io.InputStream
 
-/**
- * Created by David on 08/12/2017.
- */
 // XML Parsing
 class XMLSongParser() {
 
+    //Song class
     data class Song(val number: String, val artist: String, val title: String, val link: String)
 
     // We don’t use namespaces

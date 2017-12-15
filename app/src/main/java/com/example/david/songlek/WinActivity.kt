@@ -2,21 +2,18 @@ package com.example.david.songlek
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_win.*
-import kotlinx.android.synthetic.main.content_main.*
 
 class WinActivity : AppCompatActivity() {
 
+    //Instantiate sharedpreferences
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
     private var colourId = 0
     private var score = 0
     private var highscore = 0
     private var lyricPointsEarned = 0
-    val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     private fun switchToMain() {
         val intent = Intent(this, MainActivity::class.java)
@@ -30,8 +27,8 @@ class WinActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        //Set correct theme colour
         colourId = settings.getInt("storedColourId", 0)
-        Log.v("colourcheck", colourId.toString())
         when (colourId) {
             0 -> {
                 setTheme(R.style.RedTheme)
@@ -50,10 +47,11 @@ class WinActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_win)
 
-
+        //Get sharedpreferences values from MapsActivity
         score = settings.getInt("score", 0)
         highscore = settings.getInt("highscore", 0)
         lyricPointsEarned = settings.getInt("lyricPointsEarned", 0)
+        //Display Text
         val lyricPointsText = "You Gained A Total Of " + lyricPointsEarned + " Lyrics Points This Game."
         lyricPointsView.text = lyricPointsText
         val scoreText = "Score: " + score.toString()
@@ -78,7 +76,7 @@ class WinActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-
+        //Save sharedpreferences
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
@@ -87,6 +85,7 @@ class WinActivity : AppCompatActivity() {
         editor.apply()
     }
 
+    //Stop user from going back to MapsActivity
     override fun onBackPressed() {
         switchToMain()
     }

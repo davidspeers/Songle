@@ -22,7 +22,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.Toast
 
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -38,37 +37,26 @@ import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.maps.model.BitmapDescriptorFactory.fromResource
 import com.google.android.gms.maps.model.Marker
 import org.jetbrains.anko.*
-import java.net.URL
-import com.google.maps.android.data.kml.KmlLayer
-import com.google.maps.android.data.kml.KmlPlacemark
-import kotlinx.android.synthetic.main.activity_maps.*
-import org.jetbrains.anko.design.coordinatorLayout
-import org.xmlpull.v1.XmlPullParser
-import org.xmlpull.v1.XmlPullParserException
-import java.io.*
-import java.net.HttpURLConnection
 import java.util.*
 import kotlin.collections.ArrayList
-
 
 val uncollectedMarkersList = ArrayList<KmlMarkerParser.Marker>()
 val lyrics = ArrayList<List<String>>()
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    //Initialise Variables
     private lateinit var mMap: GoogleMap
     private lateinit var mGoogleApiClient: GoogleApiClient
-    val permissionsRequestAccessFineLocation = 1
-    var mLocationPermissionGranted = false
+    private val permissionsRequestAccessFineLocation = 1
     private var mLastLocation: Location? = null
-    val TAG = "MapsActivity"
-    val markerHash = HashMap<String, Marker>()
-    var collectedLyricsCount = 0
-    val collectedLyrics = ArrayList<String>()
-    var previousLocation: Location? = null
-    var startTime : Long = 0
+    private val TAG = "MapsActivity"
+    private val markerHash = HashMap<String, Marker>()
+    private var collectedLyricsCount = 0
+    private val collectedLyrics = ArrayList<String>()
+    private var previousLocation: Location? = null
+    private var startTime : Long = 0
 
-    private var collectedMarkers = ""
-
+    //Initialise sharedpreferences
     val PREFS_FILE = "MyPrefsFile" // for storing preferences
     private var colourId = 0
     private var difficulty = 1
@@ -84,6 +72,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var unlockedSongNumbers = ""
     private var totalDistanceTravelled = 0
     private var totalTimePlayed : Long = 0
+    private var collectedMarkers = ""
 
     private fun switchToMode() {
         val intent = Intent(this, ModeActivity::class.java)
@@ -131,6 +120,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
 
+
+        //If not a duplicate add the songs number in the songs list, if it is a duplicate add -1
         unlockedSongNumbers = settings.getString("unlockedSongNumbers", "")
         val unlockedSongsList = unlockedSongNumbers.split(",")
         for (song in unlockedSongsList) {
@@ -140,6 +131,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         }
         unlockedSongNumbers += "," + currentSongNumber.toString()
 
+        //Save values in shared preferences
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("score", score)
@@ -151,14 +143,17 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+
+        //get previously collected markers if not a new game
         newGame = settings.getBoolean("newGame", true)
         if (!newGame) {
             collectedMarkers = settings.getString("collectedMarkers", "")
-            Log.v("collected", collectedMarkers)
+            Log.d("collected", collectedMarkers)
         }
 
         //Now newGame is false unless we start a new game
         newGame = false
+        //Save shared preferences
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("score", score)
@@ -166,18 +161,20 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Apply the edits!
         editor.apply()
 
+        //Get sharedpreferences
         lyricPoints = settings.getInt("lyricPoints", 100)
         totalLyricPoints = settings.getInt("totalLyricPoints", 100)
         currentSongNumber = settings.getInt("currentSongNumber", 1)
         currentSongName = settings.getString("currentSongName", "")
         currentSongArtist = settings.getString("currentSongArtist", "")
 
+        //Set correct theme colour
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
-            0 -> setTheme(R.style.RedTheme);
-            1 -> setTheme(R.style.BlueTheme);
-            2 -> setTheme(R.style.GreenTheme);
-            3 -> setTheme(R.style.PurpleTheme);
+            0 -> setTheme(R.style.RedTheme)
+            1 -> setTheme(R.style.BlueTheme)
+            2 -> setTheme(R.style.GreenTheme)
+            3 -> setTheme(R.style.PurpleTheme)
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_maps)
@@ -194,21 +191,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-// Inflate the menu; this adds items to the action bar if it is present.
+        // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_map, menu)
         return true
     }
 
+    //Stops going back to mode (user must press new game button or win the game)
     override fun onBackPressed() {
         switchToMain()
     }
 
-    fun buyUnclassified() {
+    //Buy unclassified lyric (Extreme Difficulty only)
+    private fun buyUnclassified() {
         if (lyricPoints > 24) {
             val marker = uncollectedMarkersList[0]
             uncollectedMarkersList.remove(marker)
             collectedMarkers = collectedMarkers + "," + marker.name
-            val markerName = markerHash.get(marker.name)
+            val markerName = markerHash[marker.name]
             if (markerName == null) {
                 //Do nothing
             } else {
@@ -219,7 +218,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                 Log.v("lyrics", collectedLyric)
                 markerHash.remove(marker.name)
                 val snackbarBoughtWord = Snackbar.make(findViewById(R.id.map_Layout), "The Word You Bought Is: " + collectedLyric, Snackbar.LENGTH_INDEFINITE)
-                        .setAction("Open Lyrics List", View.OnClickListener() {
+                        .setAction("Open Lyrics List", View.OnClickListener {
                             collectedLyricsCount = 0
                             Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
                             alert(TextUtils.join(", ", collectedLyrics))
@@ -227,17 +226,19 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         })
                 snackbarBoughtWord.setActionTextColor(Color.WHITE)
                 snackbarBoughtWord.show()
-                lyricPoints = lyricPoints - 25
+                lyricPoints -= 25
             }
         } else {
             notEnoughPoints()
         }
     }
 
-    fun buyClassified(string:String, wordCost:Int) {
+    // Buy classified lyric (easy to very hard difficulty only)
+    private fun buyClassified(string:String, wordCost:Int) {
         if (lyricPoints > wordCost-1) {
             var m = uncollectedMarkersList[0]
 
+            //breaks if requested word is found
             loop@ for (marker in uncollectedMarkersList) {
                 m = marker
                 if (marker.description == string) break@loop
@@ -246,7 +247,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             //Checks if m is not of the requested description
             if (m.description != string) {
                 val snackbarBoughtWord = Snackbar.make(findViewById(R.id.map_Layout), "There Are No " + string + "Left to Buy", Snackbar.LENGTH_LONG)
-                    .setAction("Open Lyrics List", View.OnClickListener() {
+                    .setAction("Open Lyrics List", View.OnClickListener {
                         Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
                         alert(TextUtils.join(", ", collectedLyrics))
                         { title("Collected Lyrics") }.show()
@@ -256,7 +257,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             } else {
                 uncollectedMarkersList.remove(m)
                 collectedMarkers = collectedMarkers + "," + m.name
-                val markerName = markerHash.get(m.name)
+                val markerName = markerHash[m.name]
                 if (markerName == null) {
                     //Do nothing
                 } else {
@@ -267,7 +268,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                     Log.v("lyrics", collectedLyric)
                     markerHash.remove(m.name)
                     val snackbarBoughtWord = Snackbar.make(findViewById(R.id.map_Layout), "The Word You Bought Is: " + collectedLyric, Snackbar.LENGTH_INDEFINITE)
-                            .setAction("Open Lyrics List", View.OnClickListener() {
+                            .setAction("Open Lyrics List", View.OnClickListener {
                                 collectedLyricsCount = 0
                                 Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
                                 alert(TextUtils.join(", ", collectedLyrics))
@@ -275,7 +276,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                             })
                     snackbarBoughtWord.setActionTextColor(Color.WHITE)
                     snackbarBoughtWord.show()
-                    lyricPoints = lyricPoints - wordCost
+                    lyricPoints -= wordCost
                 }
             }
         } else {
@@ -283,27 +284,29 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         }
     }
 
-    fun buyArtist() {
-
+    // Buy artists name
+    private fun buyArtist() {
         if (lyricPoints > 99){
             Snackbar.make(findViewById(R.id.map_Layout), "The Artists' Name is: " + currentSongArtist, Snackbar.LENGTH_INDEFINITE)
-                    .setAction("Okay", View.OnClickListener() {})
+                    .setAction("Okay", View.OnClickListener {})
                     .setActionTextColor(Color.WHITE)
                     .show()
-            lyricPoints = lyricPoints - 100
+            lyricPoints -= 100
         } else {
             notEnoughPoints()
         }
 
     }
 
-    fun notEnoughPoints() {
+    // Called if the user doesn't have enough LyricPoints for their requested hint
+    private fun notEnoughPoints() {
         Snackbar.make(findViewById(R.id.map_Layout), "You Don't Have Enough Lyric Points", Snackbar.LENGTH_LONG)
-                .setAction("Okay", View.OnClickListener() {})
+                .setAction("Okay", View.OnClickListener {})
                 .setActionTextColor(Color.WHITE)
                 .show()
     }
 
+    //This function adds the 4 buttons to the top right of our MapsActivity
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         if (id == R.id.action_submit)
@@ -318,7 +321,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             val ims = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             ims.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
 
-            builder.setPositiveButton("Okay", DialogInterface.OnClickListener() { dialog, id ->
+            builder.setPositiveButton("Okay", DialogInterface.OnClickListener() { dialog, _ ->
                 ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 Log.v("dialog", input.text.toString())
                 val keepChars = Regex("[^A-Za-z0-9]")
@@ -328,7 +331,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                     toast("Sorry that was Incorrect")
                 }
             })
-            builder.setNegativeButton("Cancel", DialogInterface.OnClickListener() { dialog, id ->
+            builder.setNegativeButton("Cancel", DialogInterface.OnClickListener() { dialog, _ ->
                 ims.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
                 dialog.cancel()
             })
@@ -357,7 +360,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             }
             listItems.add("Get Artists' Name (100 Lyric Points)")
 
-            builder.setItems(Array(listItems.size) { i -> listItems[i].toString()}) {dialog, which ->
+            builder.setItems(Array(listItems.size) { i -> listItems[i]}) {_, which ->
                 when (which) {
                     0 -> {
                         if (difficulty == 1) {
@@ -405,24 +408,6 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             {title("Collected Lyrics")}.show()
             return true
         }
-        /*{ alert("You have unlocked the\n Walk 5 Kilometers Achievement\nHere are 10 Lyric Points") {
-            title("Congratulations!")
-            }.show()
-            return true*/
-            /*alert("You gained a total of 24 Lyric Points this Game\n\nScore: 248\n\nHigh Score: 600") {
-                title("Congratulations. You Guessed Correctly!!")
-                yesButton { toast("Go To Home Screen")}
-            }.show()
-            return true*/
-            /*alert() {
-                title("Sorry That Is Incorrect.")
-                positiveButton("Keep Playing") {}
-                negativeButton("Give Up") {}
-            }.show()
-            return true*/
-            /*Snackbar.make(coordinatorLayout(), "The Artists Name Is: Queen", Snackbar.LENGTH_INDEFINITE).setAction("Okay", View.OnClickListener() {}).show()*/
-            /*startActivity(Intent(this, WinActivity::class.java))
-                return true*/
         if (id == R.id.action_newgame)
         { alert("Are you sure you want to start a new game? All progress will be lost!") {
             yesButton {
@@ -445,6 +430,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     override fun onResume() {
         super.onResume()
 
+        //Set values required for our shared preferences
         startTime = System.currentTimeMillis()
 
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
@@ -452,7 +438,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         currentSongNumber = settings.getInt("currentSongNumber", 1)
         difficulty = settings.getInt("storedModeId", 1)
         totalDistanceTravelled = settings.getInt("totalDistanceTravelled", 0)
-        Log.v("totalDistanceTravelled", totalDistanceTravelled.toString())
+        Log.d("totalDistanceTravelled", totalDistanceTravelled.toString())
     }
 
     override fun onStart() {
@@ -466,11 +452,10 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             mGoogleApiClient.disconnect()
         }
 
+        //Save sharedpreferences
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-
         totalTimePlayed = settings.getLong("totalTimePlayed", totalTimePlayed)
         totalTimePlayed += (System.currentTimeMillis() - startTime)
-
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
         editor.putInt("incorrectGuesses", incorrectGuesses)
@@ -482,7 +467,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Apply the edits!
         editor.apply()
 
-        Log.v("totalTimePlayed", totalTimePlayed.toString())
+        Log.d("totalTimePlayed", totalTimePlayed.toString())
 
     }
 
@@ -491,7 +476,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         if (mGoogleApiClient.isConnected) {
             mGoogleApiClient.disconnect()
         }
-
+        //Save sharedpreferences
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         // We need an Editor object to make preference changes.
         val editor = settings.edit()
@@ -518,22 +503,23 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        //If the user denies permissions we got back to the main menu
         if (grantResults.contains(PermissionChecker.PERMISSION_DENIED)) {
             switchToMain()
             longToast("Songle Requires Location Permissions to be Played")
         } else {
             //These lines restart the MapsActivity after permissions are granted, so that the location marker and button appear.
-            overridePendingTransition(0, 0);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-            finish();
-            overridePendingTransition(0, 0);
-            startActivity(intent);
+            overridePendingTransition(0, 0)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+            finish()
+            overridePendingTransition(0, 0)
+            startActivity(intent)
         }
     }
 
     override fun onConnected(connectionHint: Bundle?) {
         try {
-            createLocationRequest();
+            createLocationRequest()
         }
         catch (ise: IllegalStateException) {
             println("[$TAG] [onConnected] IllegalStateException thrown")
@@ -541,10 +527,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         // Can we access the user’s current location?
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient)
-            Log.v("connector", "1")
         } else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), permissionsRequestAccessFineLocation)
-            Log.v("connector", "2")
         }
     }
 
@@ -556,17 +540,18 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             (${current.getLatitude()},
             ${current.getLongitude()})"""
             )
+            //Calculate Distance Travelled between last location change
             if (previousLocation != null) {
                 totalDistanceTravelled += current.distanceTo(previousLocation).toInt()
             }
 
-            // Do something with current location
+            // Remove all markers within 10m of the location and add them to the lyrics list
             for (marker in uncollectedMarkersList) {
                 val coords = marker.point.split(',')
                 val result = FloatArray(10)
                 Location.distanceBetween(current.latitude, current.longitude, coords[1].toDouble(), coords[0].toDouble(), result)
                 if (result[0] < 10) {
-                    val markerName = markerHash.get(marker.name)
+                    val markerName = markerHash[marker.name]
                     if (markerName == null) {
                         //Do nothing
                     } else {
@@ -582,7 +567,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         totalLyricPoints++
                         lyricPointsEarned++
                         val snackbarLyricCount = Snackbar.make(findViewById(R.id.map_Layout), "New Lyrics Collected: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
-                        snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener() {
+                        snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener {
                             collectedLyricsCount = 0
                             Snackbar.make(findViewById(R.id.map_Layout), "", 1).show()
                             alert(TextUtils.join(", ", collectedLyrics))
@@ -623,11 +608,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
-        // Add a marker in Sydney and move the camera
-        val sydney = LatLng(55.945, -3.1885)
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, 16.toFloat()))
-
-        // Also available: new LatLngZoom(sydney, 15)
+        // Add a marker in Edinburgh and move the camera
+        val edinburgh = LatLng(55.945, -3.1885)
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(edinburgh, 16.toFloat()))
 
         try {
             // Visualise current position with a small blue circle
@@ -652,6 +635,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
             }
 
             uiThread {
+                //add all markers to the map once they've been parsed from the KML file
                 for (marker in uncollectedMarkersList) {
                     val coords = marker.point.split(',')
                     Log.v("coordes", marker.description)
@@ -684,13 +668,13 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     }
 }
 
+//collect markers from the map that were collected in a previous session of the same game
 fun collectPrevMarkers(collectedMarkers:String, markerHash:HashMap<String, Marker>, collectedLyrics:ArrayList<String>, lyrics:ArrayList<List<String>>) {
     Log.v("collected", "working!")
     val prevMarkerKeys = collectedMarkers.split(",")
     for (markerKey in prevMarkerKeys) {
-        val markerName = markerHash.get(markerKey)
+        val markerName = markerHash[markerKey]
         Log.v("collected", markerName.toString())
-        var count = 0
         if (markerName == null) {
             //Do nothing
         } else {

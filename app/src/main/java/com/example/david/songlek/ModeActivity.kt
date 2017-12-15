@@ -13,8 +13,6 @@ import org.jetbrains.anko.longToast
 import org.jetbrains.anko.uiThread
 import java.util.*
 
-//val songsList = ArrayList<XMLSongParser.Song>()
-
 class ModeActivity : AppCompatActivity() {
 
     private fun switchToMap() {
@@ -22,33 +20,38 @@ class ModeActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
+    // Initialise NetworkReceiver class
     private var receiver = NetworkReceiver()
 
-    private var buttonId = 4 // id of radio button selected
+    // Initialise sharedpreferences
+    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+    private var buttonId = 4 // id of radio button selected (normal default)
     private var colourId = 0
     private var currentSongNumber = 1
     private var currentSongName = ""
     private var currentSongArtist = ""
     private var currentSongLink = ""
     private var gameStarted = false
-    val PREFS_FILE = "MyPrefsFile" // for storing preferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //Set correct theme colour
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
-            0 -> setTheme(R.style.RedTheme);
-            1 -> setTheme(R.style.BlueTheme);
-            2 -> setTheme(R.style.GreenTheme);
-            3 -> setTheme(R.style.PurpleTheme);
+            0 -> setTheme(R.style.RedTheme)
+            1 -> setTheme(R.style.BlueTheme)
+            2 -> setTheme(R.style.GreenTheme)
+            3 -> setTheme(R.style.PurpleTheme)
         }
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_mode)
 
-        var filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        // Register BroadcastReceiver to track connection changes.
+        val filter = IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
         this.registerReceiver(receiver, filter)
 
-        playGameButton.setOnClickListener() {
+        //If connected to internet store sharedpreferences required for MapsActivity and go to MapsAcitivty
+        playGameButton.setOnClickListener {
             if (receiver.connectedToInternet) {
                 val editor = settings.edit()
                 gameStarted = true
@@ -64,7 +67,8 @@ class ModeActivity : AppCompatActivity() {
 
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
 
-        radioMode.setOnCheckedChangeListener({ radioGroup, optionId ->
+        //Choose Difficulty
+        radioMode.setOnCheckedChangeListener({ _, optionId ->
             when (optionId) {
                 R.id.easyRadioButton -> {
                     modeDescription.setText(R.string.easyModeParagraph)
@@ -89,28 +93,41 @@ class ModeActivity : AppCompatActivity() {
             }
         })
 
-        doAsync {
-            DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
-            uiThread {
-                val rand = Random()
-                val randomSong = songsList.get(rand.nextInt(songsList.size))
-                Log.v("random", randomSong.title)
-                currentSongNumber = randomSong.number.toInt()
-                currentSongName = randomSong.title
-                currentSongArtist = randomSong.artist
-                currentSongLink = randomSong.link
+        //If songsList hasn't been downloaded yet download here and then randomly pick a song
+        if (songsList.size == 0) {
+            doAsync {
+                DownloadXmlTask().execute("http://www.inf.ed.ac.uk/teaching/courses/cslp/data/songs/songs.xml")
+                uiThread {
+                    val rand = Random()
+                    val randomSong = songsList[rand.nextInt(songsList.size)]
+                    Log.d("SongTitle", randomSong.title)
+                    currentSongNumber = randomSong.number.toInt()
+                    currentSongName = randomSong.title
+                    currentSongArtist = randomSong.artist
+                    currentSongLink = randomSong.link
+                }
             }
+        } else { //If songsList is already downloaded, just pick a song
+            val rand = Random()
+            val randomSong = songsList[rand.nextInt(songsList.size)]
+            Log.d("SongTitle", randomSong.title)
+            currentSongNumber = randomSong.number.toInt()
+            currentSongName = randomSong.title
+            currentSongArtist = randomSong.artist
+            currentSongLink = randomSong.link
         }
+
     }
+
 
     override fun onStart() {
         super.onStart()
         // Restore preferences
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
-        // use 1 as the default value (this might be the first time the app is run)
-        buttonId = settings.getInt("storedModeId", 4)
+        buttonId = settings.getInt("storedModeId", 4) // 4 is normal mode and our default
         colourId = settings.getInt("storedColourId", 0)
 
+        //Set the difficulty to the difficulty that was chosen last game
         when (buttonId) {
             5 -> easyRadioButton.setChecked(true)
             4 -> normalRadioButton.setChecked(true)
@@ -119,6 +136,7 @@ class ModeActivity : AppCompatActivity() {
             1 -> extremeRadioButton.setChecked(true)
         }
 
+        //Obtain the colour of the play game button
         when (colourId) {
             0 -> playGameButton.setBackgroundResource(R.drawable.redstart)
             1 -> playGameButton.setBackgroundResource(R.drawable.bluestart)
@@ -127,6 +145,7 @@ class ModeActivity : AppCompatActivity() {
         }
     }
 
+    //OnPause save the following sharedpreferences
     override fun onPause() {
         super.onPause()
         // All objects are from android.context.Context

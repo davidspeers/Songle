@@ -8,9 +8,6 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-/**
- * Created by David on 08/12/2017.
- */
 class DownloadLyricsTask() {
 
     fun execute(vararg urls: String) {
@@ -22,23 +19,17 @@ class DownloadLyricsTask() {
     }
 
     private fun loadLyricsFromNetwork(urlString: String)  {
-        val stream = downloadUrl(urlString)
         val url = URL(urlString)
         val reader = BufferedReader(InputStreamReader(url.openStream()))
         var line = reader.readLine()
+        //add each lyric to the lyrics line, where the lyrics consist of a set of lyrics lines
         while (line!=null) {
-            /*for (lyric in line.split("\\s+")) {
-                lyricsLine.add(lyric)
-                Log.v("Working", lyricsLine.get(0))
-                Log.v("Working?", line)
-            }*/
-            val lyricsLine = line.replace(",", "").replace(".", "").replace("!", "").replace("?", "").replace("(", "").replace(")", "").split(" ")
-            //
+            val lyricsLine = line.replace(",", "").replace(".", "").replace("!", "").replace("?", "").replace("(", "").replace(")", "").split(" ")//do not add these special chars to my lyrics (some special chars like apostrophe want to be preserved
             lyrics.add(lyricsLine)
             Log.v("working", lyricsLine[0])
             line = reader.readLine()
         }
-        reader.close();
+        reader.close()
     }
 
     @Throws(IOException::class)

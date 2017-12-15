@@ -6,9 +6,6 @@ import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
-/**
- * Created by David on 08/12/2017.
- */
 class DownloadKmlTask() {
 
     fun execute(vararg urls: String): String {
@@ -26,6 +23,7 @@ class DownloadKmlTask() {
         val stream = downloadUrl(urlString)
         val parsedMarkers = KmlMarkerParser().parse(stream)
         result.append(parsedMarkers.toString())
+        //for every Marker I parse add it to the uncollectedMarkersList
         for (marker in parsedMarkers) {
             uncollectedMarkersList.add(marker)
         }
