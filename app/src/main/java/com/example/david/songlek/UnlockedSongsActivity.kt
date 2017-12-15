@@ -61,8 +61,12 @@ class UnlockedSongsActivity : AppCompatActivity() {
                 //Do Nothing
             } else {
                 //Need a check that songslist is > 1 (else you get an error if it hasn't loaded)
-                task_list.add(songsList[songNumber.toInt()-1])
-                Log.v("unlockedSongs", songsList[songNumber.toInt()-1].title)
+                if (songNumber.toInt() == -1) {
+                    //do nothing (it's a duplicate)
+                } else {
+                    task_list.add(songsList[songNumber.toInt()-1])
+                    Log.v("unlockedSongs", songsList[songNumber.toInt()-1].title)
+                }
             }
         }
 

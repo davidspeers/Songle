@@ -132,6 +132,12 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
 
         unlockedSongNumbers = settings.getString("unlockedSongNumbers", "")
+        val unlockedSongsList = unlockedSongNumbers.split(",")
+        for (song in unlockedSongsList) {
+            if (currentSongNumber.toString() == song) {
+                currentSongNumber=-1 //Set it to an int we won't get in our list
+            }
+        }
         unlockedSongNumbers += "," + currentSongNumber.toString()
 
         // We need an Editor object to make preference changes.
