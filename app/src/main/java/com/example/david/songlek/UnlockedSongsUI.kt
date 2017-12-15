@@ -17,11 +17,16 @@ class UnlockedSongsUI(val UnlockedSongsAdapter: UnlockedSongsAdapter) : AnkoComp
                 todoList=listView {
                     adapter = UnlockedSongsAdapter
                     // onItemClick go to the corresponding YouTube link
-                    onItemClick { adapterView, view, i, l ->
-                        val peanut : String = adapter.getItem(i) as String
-                        val uri = Uri.parse(peanut)
-                        val i = Intent(Intent.ACTION_VIEW, uri)
-                        context.startActivity(i)
+                    onItemClick { _, _, i, _ ->
+                        alert("Do you want to watch the music video on Youtube?") {
+                            yesButton {
+                                val peanut : String = adapter.getItem(i) as String
+                                val uri = Uri.parse(peanut)
+                                val i = Intent(Intent.ACTION_VIEW, uri)
+                                context.startActivity(i)
+                            }
+                            noButton {}
+                        }.show()
                     }
                 }
             }.lparams {
