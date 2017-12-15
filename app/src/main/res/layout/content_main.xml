@@ -77,6 +77,6 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/SongleLogo2Big" />
+        app:srcCompat="@drawable/songlelogo2big" />
 
 </android.support.constraint.ConstraintLayout>

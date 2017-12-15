@@ -2,8 +2,10 @@ package com.example.david.songlek
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import kotlinx.android.synthetic.main.activity_win.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -27,10 +29,28 @@ class WinActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+        colourId = settings.getInt("storedColourId", 0)
+        Log.v("colourcheck", colourId.toString())
+        when (colourId) {
+            0 -> {
+                setTheme(R.style.RedTheme)
+            }
+            1 -> {
+                setTheme(R.style.BlueTheme)
+            }
+            2 -> {
+                setTheme(R.style.GreenTheme)
+            }
+            3 -> {
+                setTheme(R.style.PurpleTheme)
+            }
+        }
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_win)
 
-        val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
+
         score = settings.getInt("score", 0)
         highscore = settings.getInt("highscore", 0)
         lyricPointsEarned = settings.getInt("lyricPointsEarned", 0)
@@ -43,13 +63,6 @@ class WinActivity : AppCompatActivity() {
         }
         val highscoreText = "High Score: " + highscore
         highscoreView.text = highscoreText
-        colourId = settings.getInt("storedColourId", 0)
-        when (colourId) {
-            0 -> setTheme(R.style.RedTheme);
-            1 -> setTheme(R.style.BlueTheme);
-            2 -> setTheme(R.style.GreenTheme);
-            3 -> setTheme(R.style.PurpleTheme);
-        }
 
         getSupportActionBar()?.setDisplayHomeAsUpEnabled(true)
 

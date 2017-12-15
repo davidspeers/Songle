@@ -75,6 +75,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
     private var score = 0
     private var incorrectGuesses = 0
     private var lyricPoints = 100
+    private var totalLyricPoints = 100
     private var lyricPointsEarned = 0
     private var newGame = true
     private var currentSongNumber = 1
@@ -160,6 +161,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         editor.apply()
 
         lyricPoints = settings.getInt("lyricPoints", 100)
+        totalLyricPoints = settings.getInt("totalLyricPoints", 100)
         currentSongNumber = settings.getInt("currentSongNumber", 1)
         currentSongName = settings.getString("currentSongName", "")
         currentSongArtist = settings.getString("currentSongArtist", "")
@@ -467,6 +469,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
         val editor = settings.edit()
         editor.putInt("incorrectGuesses", incorrectGuesses)
         editor.putInt("lyricPoints", lyricPoints)
+        editor.putInt("totalLyricPoints", totalLyricPoints)
         editor.putInt("totalDistanceTravelled", totalDistanceTravelled)
         editor.putLong("totalTimePlayed", totalTimePlayed)
         editor.putString("collectedMarkers", collectedMarkers)
@@ -570,6 +573,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback, GoogleApiClient.Co
                         collectedMarkers = collectedMarkers + "," + marker.name
                         collectedLyricsCount++
                         lyricPoints++
+                        totalLyricPoints++
                         lyricPointsEarned++
                         val snackbarLyricCount = Snackbar.make(findViewById(R.id.map_Layout), "New Lyrics Collected: " + collectedLyricsCount, Snackbar.LENGTH_INDEFINITE)
                         snackbarLyricCount.setAction("Open Lyrics List", View.OnClickListener() {
