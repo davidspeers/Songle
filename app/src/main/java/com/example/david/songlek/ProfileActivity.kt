@@ -1,17 +1,19 @@
 package com.example.david.songlek
 
 import android.content.Context
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
-import org.jetbrains.anko.*;
+import org.jetbrains.anko.*
 import java.util.*
 
 class ProfileActivity : AppCompatActivity() {
 
-    val profile_list = ArrayList<String>()
+    //All the strings we want to list in the ListView
+    private val profile_list = ArrayList<String>()
 
-    val PREFS_FILE = "MyPrefsFile" // for storing preferences
+    //initialise sharedpreferences
+    private val PREFS_FILE = "MyPrefsFile" // for storing preferences
     private var colourId = 0
     private var lyricPoints = 100
     private var totalLyricPoints = 100
@@ -28,10 +30,10 @@ class ProfileActivity : AppCompatActivity() {
         val settings = getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE)
         colourId = settings.getInt("storedColourId", 0)
         when (colourId) {
-            0 -> setTheme(R.style.RedTheme);
-            1 -> setTheme(R.style.BlueTheme);
-            2 -> setTheme(R.style.GreenTheme);
-            3 -> setTheme(R.style.PurpleTheme);
+            0 -> setTheme(R.style.RedTheme)
+            1 -> setTheme(R.style.BlueTheme)
+            2 -> setTheme(R.style.GreenTheme)
+            3 -> setTheme(R.style.PurpleTheme)
         }
         lyricPoints = settings.getInt("lyricPoints", 0)
         totalLyricPoints = settings.getInt("totalLyricPoints", 0)
@@ -46,8 +48,9 @@ class ProfileActivity : AppCompatActivity() {
 
         profile_list.add("Current Lyric Points: "+ lyricPoints)
         profile_list.add("High Score: "+ highscore)
-        profile_list.add("Unlocked Achievements:")
 
+        //List Unlocked Achievements
+        profile_list.add("Unlocked Achievements:")
         if (unlockedSongs > 0) profile_list.add("Unlocked 1 Songs")
         if (unlockedSongs > 4) profile_list.add("Unlocked 5 Songs")
         if (unlockedSongs > 9) profile_list.add("Unlocked 10 Songs")
@@ -76,8 +79,7 @@ class ProfileActivity : AppCompatActivity() {
 
         if (changedTheme) profile_list.add("Changed the Theme")
 
-
-
+        //List Locked Achievements
         profile_list.add("Locked Achievements:")
         if (unlockedSongs < 1) profile_list.add("Unlocked 1 Songs")
         if (unlockedSongs < 5) profile_list.add("Unlocked 5 Songs")
@@ -107,28 +109,24 @@ class ProfileActivity : AppCompatActivity() {
 
         if (!changedTheme) profile_list.add("Changed the Theme (Hint: Go to Settings)")
 
-
+        //Check if all achievements are unlocked
         if (unlockedSongs>14 && highscore>=1500 && totalLyricPoints>750 && totalDistanceTravelled>=20000 && totalTimePlayed/3600000>=10 && changedTheme ) allAchievementsUnlocked = true
 
+        //Check if the ListView is correct
+        Log.d("Achievements", totalLyricPoints.toString())
+        Log.d("Achievements", highscore.toString())
+        Log.d("Achievements", unlockedSongs.toString())
+        Log.d("Achievements", totalDistanceTravelled.toString())
+        Log.d("Achievements", totalTimePlayed.toString())
 
-        /*Log.v("ProfCheck", lyricPoints.toString())
-        Log.v("ProfCheck", highscore.toString())
-        Log.v("ProfCheck", unlockedSongs.toString())
-        Log.v("ProfCheck", totalDistanceTravelled.toString())
-        Log.v("ProfCheck", totalTimePlayed.toString())
 
-        profile_list.add(lyricPoints.toString())
-        profile_list.add(highscore.toString())
-        profile_list.add(unlockedSongs.toString())
-        profile_list.add(totalDistanceTravelled.toString())
-        profile_list.add(totalTimePlayed.toString())*/
-
-        var adapter=ProfileAdapter(profile_list)      //define adapter
-        var ui = ProfileUI(adapter)                //define Anko UI Layout to be used
+        val adapter=ProfileAdapter(profile_list)      //define adapter
+        val ui = ProfileUI(adapter)                //define Anko UI Layout to be used
         ui.setContentView(this)                 //Set Anko UI to this Activity
 
     }
 
+    //Save allAchievementsUnlocked Boolean required to unlock the purple theme in SettingsActivity
     override fun onPause() {
         super.onPause()
         // All objects are from android.context.Context
