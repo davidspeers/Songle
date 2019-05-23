@@ -5,4 +5,5 @@ Songle is a location based mobile phone puzzle game which allows users to follow
 The app was made using Android Studio, Kotlin, and the Google Maps API over the course of 11 weeks for the Computer Science Large Practical in 2017.
 
 Course Website: https://www.inf.ed.ac.uk/teaching/courses/cslp/
+
 Lecturer: Professor Stephen Gilmore
